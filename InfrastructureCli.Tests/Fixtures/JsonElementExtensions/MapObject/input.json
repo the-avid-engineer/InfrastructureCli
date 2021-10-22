@@ -1,0 +1,22 @@
+{
+  "@Map": [
+    {
+      "0": "",
+      "1": 0,
+      "2": true,
+      "3": false,
+      "4": null,
+      "5": [],
+      "6": { "foo": "bar" }
+    },
+    {
+      "Key": {
+        "@GetAttributeValue": "Key"
+      },
+      "Value": {
+        "@GetAttributeValue": "Value"
+      },
+      "KeyAndValue": "@{Key}:@{Value}"
+    }
+  ]
+}

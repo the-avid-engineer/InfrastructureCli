@@ -1,0 +1,39 @@
+[
+  {
+    "Index": 0,
+    "Value": "",
+    "IndexAndValue": "0:"
+  },
+  {
+    "Index": 1,
+    "Value": 0,
+    "IndexAndValue": "1:0"
+  },
+  {
+    "Index": 2,
+    "Value": true,
+    "IndexAndValue": "2:True"
+  },
+  {
+    "Index": 3,
+    "Value": false,
+    "IndexAndValue": "3:False"
+  },
+  {
+    "Index": 4,
+    "Value": null,
+    "IndexAndValue": "4:"
+  },
+  {
+    "Index": 5,
+    "Value": [],
+    "IndexAndValue": "5:[]"
+  },
+  {
+    "Index": 6,
+    "Value": {
+      "foo": "bar"
+    },
+    "IndexAndValue": "6:{\"foo\":\"bar\"}"
+  }
+]

@@ -1,0 +1,39 @@
+[
+  {
+    "Key": "0",
+    "Value": "",
+    "KeyAndValue": "0:"
+  },
+  {
+    "Key": "1",
+    "Value": 0,
+    "KeyAndValue": "1:0"
+  },
+  {
+    "Key": "2",
+    "Value": true,
+    "KeyAndValue": "2:True"
+  },
+  {
+    "Key": "3",
+    "Value": false,
+    "KeyAndValue": "3:False"
+  },
+  {
+    "Key": "4",
+    "Value": null,
+    "KeyAndValue": "4:"
+  },
+  {
+    "Key": "5",
+    "Value": [],
+    "KeyAndValue": "5:[]"
+  },
+  {
+    "Key": "6",
+    "Value": {
+      "foo": "bar"
+    },
+    "KeyAndValue": "6:{\"foo\":\"bar\"}"
+  }
+]

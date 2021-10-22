@@ -1,0 +1,22 @@
+{
+  "@Map": [
+    [
+      "",
+      0,
+      true,
+      false,
+      null,
+      [],
+      { "foo": "bar" }
+    ],
+    {
+      "Index": {
+        "@GetAttributeValue": "Index"
+      },
+      "Value": {
+        "@GetAttributeValue": "Value"
+      },
+      "IndexAndValue": "@{Index}:@{Value}"
+    }
+  ]
+}
