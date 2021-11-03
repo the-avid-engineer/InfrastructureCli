@@ -1,0 +1,8 @@
+{
+  "string": "\"\"",
+  "true": "true",
+  "false": "false",
+  "null": "null",
+  "array": "[]",
+  "object": "{\"foo\":\"bar\"}"
+}

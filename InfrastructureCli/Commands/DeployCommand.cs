@@ -5,6 +5,7 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using InfrastructureCli.Extensions;
 using InfrastructureCli.Models;
 using InfrastructureCli.Services;
 
@@ -25,6 +26,13 @@ namespace InfrastructureCli.Commands
 
             var template = await FileService.DeserializeFromFile<JsonElement>(templateFileName);
 
+            template = template
+                .RewriteGetAttributeValues(configuration.Attributes)
+                .RewriteMaps()
+                .RewriteSpreads()
+                .RewriteGetPropertyValues()
+                .RewriteSerializes();
+            
             var success = configurationsFile.Type switch
             {
                 ConfigurationType.AwsCloudFormation => await AwsCloudFormationService.Deploy(configuration, template),
@@ -36,7 +44,7 @@ namespace InfrastructureCli.Commands
 
         private static void AttachTemplateFileNameArgument(Command parentCommand)
         {
-            var templateFileName = new Argument<FileInfo>("template-file-name")
+            var templateFileName = new Argument<FileInfo>("template-file-name", () => OptionService.DefaultTemplateFileName())
             {
                 Description = "The name of the file which contains the template."
             };

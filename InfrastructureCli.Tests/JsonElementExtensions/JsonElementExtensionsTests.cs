@@ -17,6 +17,7 @@ namespace InfrastructureCli.Tests.Rewriters
         [InlineData("GetPropertyValueUndefined")]
         [InlineData("MapArray")]
         [InlineData("MapObject")]
+        [InlineData("Serialize")]
         [InlineData("SpreadArray")]
         [InlineData("SpreadObject")]
         public static async Task RewriteFixtureTests(string fixtureName)
@@ -41,7 +42,8 @@ namespace InfrastructureCli.Tests.Rewriters
                 })
                 .RewriteMaps()
                 .RewriteSpreads()
-                .RewriteGetPropertyValues();
+                .RewriteGetPropertyValues()
+                .RewriteSerializes();
 
             var formattedExpectedOutput = JsonService.Serialize(expectedOutput);
             var formattedActualOutput = JsonService.Serialize(actualOutput);

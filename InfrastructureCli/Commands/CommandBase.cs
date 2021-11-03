@@ -18,7 +18,7 @@ namespace InfrastructureCli.Commands
 
         public static void AttachConfigurationsFileNameOption(Command parentCommand)
         {
-            var configurationsFileName = new Option<FileInfo>("--configurations-file-name", () => OptionService.DefaultConfigurationFileName())
+            var configurationsFileName = new Option<FileInfo>("--configurations-file-name", () => OptionService.DefaultConfigurationsFileName())
             {
                 Description = "The name of the file which contains the configuration type and dictionary of configurations."
             };

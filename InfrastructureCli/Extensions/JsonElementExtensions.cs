@@ -58,6 +58,20 @@ namespace InfrastructureCli.Extensions
             return JsonSerializer.Deserialize<JsonElement>(memoryStream.ToArray());
         }
 
+        public static JsonElement RewriteSerializes(this JsonElement jsonElement)
+        {
+            using var memoryStream = new MemoryStream();
+            using var jsonWriter = new Utf8JsonWriter(memoryStream);
+
+            var rewriter = new SerializeRewriter(jsonWriter);
+
+            rewriter.Rewrite(jsonElement);
+
+            jsonWriter.Flush();
+
+            return JsonSerializer.Deserialize<JsonElement>(memoryStream.ToArray());
+        }
+        
         public static JsonElement RewriteSpreads(this JsonElement jsonElement)
         {
             using var memoryStream = new MemoryStream();

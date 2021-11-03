@@ -1,0 +1,22 @@
+{
+  "string": {
+    "@Serialize": ""
+  },
+  "true": {
+    "@Serialize": true
+  },
+  "false": {
+    "@Serialize": false
+  },
+  "null": {
+    "@Serialize": null
+  },
+  "array": {
+    "@Serialize": []
+  },
+  "object": {
+    "@Serialize": {
+      "foo": "bar"
+    }
+  }
+}

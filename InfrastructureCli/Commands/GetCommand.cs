@@ -24,20 +24,6 @@ namespace InfrastructureCli.Commands
             return 0;
         }
 
-        private static async Task<int> ExecuteParameter(FileInfo configurationsFileName, string configurationKey, string propertyName, IConsole console)
-        {
-            var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(configurationsFileName);
-
-            var configuration = configurationsFile.Configurations.GetValueOrDefault(configurationKey);
-
-            if (configuration == default)
-            {
-                return 1;
-            }
-
-            return Execute(configuration.Parameters, propertyName, console);
-        }
-
         private static async Task<int> ExecuteTag(FileInfo configurationsFileName, string configurationKey, string propertyName, IConsole console)
         {
             var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(configurationsFileName);
@@ -76,19 +62,6 @@ namespace InfrastructureCli.Commands
             parentCommand.AddArgument(propertyName);
         }
 
-        private static void AttachParameterCommand(Command parentCommand)
-        {
-            var parameterCommand = new Command("parameter")
-            {
-                Handler = CommandHandler.Create<FileInfo, string, string, IConsole>(ExecuteParameter),
-                Description = "Retrieves parameter information from a configuration."
-            };
-
-            AttachPropertyNameArgument(parameterCommand);
-
-            parentCommand.AddCommand(parameterCommand);
-        }
-
         private static void AttachTagCommand(Command parentCommand)
         {
             var tagCommand = new Command("tag")
@@ -124,7 +97,6 @@ namespace InfrastructureCli.Commands
 
             AttachConfigurationNameArgument(getCommand);
 
-            AttachParameterCommand(getCommand);
             AttachTagCommand(getCommand);
             AttachMetaCommand(getCommand);
 
