@@ -6,7 +6,7 @@ namespace InfrastructureCli.Commands
 {
     internal abstract class CommandBase
     {
-        public static void AttachConfigurationNameArgument(Command parentCommand)
+        public static void AttachConfigurationKeyArgument(Command parentCommand)
         {
             var configurationKey = new Argument<string>("configuration-key")
             {

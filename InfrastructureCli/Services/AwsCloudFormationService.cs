@@ -24,6 +24,15 @@ namespace InfrastructureCli.Services
             };
         }
 
+        private static Parameter ReuseParameter(Parameter parameter)
+        {
+            return new()
+            {
+                ParameterKey = parameter.ParameterKey,
+                UsePreviousValue = true,
+            };
+        }
+
         private static Tag GetTag(KeyValuePair<string, string> tag)
         {
             return new()
@@ -38,18 +47,25 @@ namespace InfrastructureCli.Services
             return configuration.Label;
         }
 
-        private static List<Parameter> ReuseParameters(Stack stack)
-        {
-            return stack.Parameters.Select(parameter => new Parameter
-            {
-                ParameterKey = parameter.ParameterKey,
-                UsePreviousValue = true,
-            }).ToList();
-        }
-
         private static List<Parameter> GetParameters(Dictionary<string, string> parameters)
         {
             return parameters.Select(GetParameter).ToList();
+        }
+
+        private static List<Parameter> GetParameters(Dictionary<string, string> parameters, Stack stack)
+        {
+            var parameterDictionary = GetParameters(parameters)
+                .ToDictionary(parameter => parameter.ParameterKey);
+            
+            foreach (var parameter in stack.Parameters)
+            {
+                if (parameterDictionary.ContainsKey(parameter.ParameterKey) == false)
+                {
+                    parameterDictionary.Add(parameter.ParameterKey, ReuseParameter(parameter));
+                }
+            }
+            
+            return parameterDictionary.Values.ToList();
         }
 
         private static List<Tag> GetTags(Configuration configuration)
@@ -62,9 +78,9 @@ namespace InfrastructureCli.Services
             return JsonService.Serialize(template);
         }
 
-        private static async Task<Stack?> GetStack(Configuration configuration)
+        private static async Task<Stack?> GetStack(DeployOptions options)
         {
-            var stackName = GetStackName(configuration);
+            var stackName = GetStackName(options.Configuration);
             
             try
             {
@@ -83,7 +99,7 @@ namespace InfrastructureCli.Services
             }
         }
 
-        private static async Task<bool> WaitForStatusChange(Configuration configuration, string loopStatus, params string[] successStatuses)
+        private static async Task<bool> WaitForStatusChange(DeployOptions options, string loopStatus, params string[] successStatuses)
         {
             var currentStatus = loopStatus;
             
@@ -93,7 +109,7 @@ namespace InfrastructureCli.Services
                 
                 await Task.Delay(TimeSpan.FromSeconds(30));
                 
-                var stack = await GetStack(configuration);
+                var stack = await GetStack(options);
 
                 if (stack == null)
                 {
@@ -108,13 +124,14 @@ namespace InfrastructureCli.Services
             return successStatuses.Contains(currentStatus);
         }
 
-        private static async Task<bool> CreateStack(Configuration configuration, JsonElement template)
+        private static async Task<bool> CreateStack(DeployOptions options)
         {
             var request = new CreateStackRequest
             {
-                StackName = GetStackName(configuration),
-                Tags = GetTags(configuration),
-                TemplateBody = GetTemplateBody(template),
+                StackName = GetStackName(options.Configuration),
+                Tags = GetTags(options.Configuration),
+                TemplateBody = GetTemplateBody(options.Template),
+                Parameters = GetParameters(options.Parameters)
             };
 
             var response = await Client.CreateStackAsync(request);
@@ -124,20 +141,30 @@ namespace InfrastructureCli.Services
                 return false;
             }
             
-            return await WaitForStatusChange(configuration, "CREATE_IN_PROGRESS", "CREATE_COMPLETE");
+            return await WaitForStatusChange(options, "CREATE_IN_PROGRESS", "CREATE_COMPLETE");
         }
 
-        private static async Task<bool> UpdateStack(Stack stack, Configuration configuration, JsonElement template)
+        private static async Task<bool> UpdateStack(Stack stack, DeployOptions options)
         {
             try
             {
                 var request = new UpdateStackRequest
                 {
-                    StackName = GetStackName(configuration),
-                    Tags = GetTags(configuration),
-                    TemplateBody = GetTemplateBody(template),
-                    Parameters = ReuseParameters(stack),
+                    StackName = GetStackName(options.Configuration),
+                    Tags = GetTags(options.Configuration),
+                    Parameters = options.UsePreviousParameters
+                        ? GetParameters(options.Parameters, stack)
+                        : GetParameters(options.Parameters)
                 };
+
+                if (options.UsePreviousTemplate)
+                {
+                    request.UsePreviousTemplate = true;
+                }
+                else
+                {
+                    request.TemplateBody = GetTemplateBody(options.Template);
+                }
 
                 var response = await Client.UpdateStackAsync(request);
 
@@ -146,7 +173,7 @@ namespace InfrastructureCli.Services
                     return false;
                 }
 
-                return await WaitForStatusChange(configuration, "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS", "UPDATE_COMPLETE");
+                return await WaitForStatusChange(options, "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS", "UPDATE_COMPLETE");
             }
             catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
             {
@@ -154,9 +181,9 @@ namespace InfrastructureCli.Services
             }
         }
 
-        public static async Task<bool> Deploy(Configuration configuration, JsonElement template)
+        public static async Task<bool> Deploy(DeployOptions options)
         {
-            var expectedAccountId = configuration.Metas.GetValueOrDefault("AccountId");
+            var expectedAccountId = options.Configuration.Metas.GetValueOrDefault("AccountId");
             var currentAccountId = await AwsSecurityTokenService.GetAccountId();
 
             if (currentAccountId != expectedAccountId)
@@ -164,7 +191,7 @@ namespace InfrastructureCli.Services
                 throw new Exception($"This configuration is for account {expectedAccountId} but this command is running for account {currentAccountId}.");
             }
 
-            var expectedRegion = configuration.Metas.GetValueOrDefault("Region");
+            var expectedRegion = options.Configuration.Metas.GetValueOrDefault("Region");
             var currentRegion = FallbackRegionFactory.GetRegionEndpoint().SystemName;
 
             if (currentRegion != expectedRegion)
@@ -172,14 +199,14 @@ namespace InfrastructureCli.Services
                 throw new Exception($"This configuration is for region {expectedRegion} but this command is running for region {currentRegion}.");
             }
 
-            var stack = await GetStack(configuration);
+            var stack = await GetStack(options);
 
             if (stack != null)
             {
-                return await UpdateStack(stack, configuration, template);
+                return await UpdateStack(stack, options);
             }
 
-            return await CreateStack(configuration, template);
+            return await CreateStack(options);
         }
     }
 }

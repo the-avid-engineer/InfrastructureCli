@@ -44,6 +44,8 @@ namespace InfrastructureCli.Commands
                     return lastErrorCode;
                 })
             };
+            
+            rootCommand.AddCommand(interactiveCommand);
         }
     }
 }

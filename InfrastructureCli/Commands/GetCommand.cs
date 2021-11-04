@@ -10,46 +10,57 @@ namespace InfrastructureCli.Commands
 {
     internal class GetCommand : CommandBase
     {
-        private static int Execute(Dictionary<string, string> properties, string propertyName, IConsole console)
+        private record Arguments
+        (
+            FileInfo ConfigurationsFileName,
+            string ConfigurationKey,
+            string PropertyName,
+            IConsole Console
+        );
+        
+        private static int Execute(Dictionary<string, string> properties, Arguments arguments)
         {
-            var propertyValue = properties.GetValueOrDefault(propertyName);
+            var propertyValue = properties.GetValueOrDefault(arguments.PropertyName);
 
             if (propertyValue == default)
             {
                 return 2;
             }
 
-            console.Out.Write(propertyValue);
+            arguments.Console.Out.Write(propertyValue);
 
             return 0;
         }
 
-        private static async Task<int> ExecuteTag(FileInfo configurationsFileName, string configurationKey, string propertyName, IConsole console)
+        private static async Task<Configuration?> GetConfiguration(Arguments arguments)
         {
-            var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(configurationsFileName);
+            var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(arguments.ConfigurationsFileName);
 
-            var configuration = configurationsFile.Configurations.GetValueOrDefault(configurationKey);
-
-            if (configuration == default)
-            {
-                return 1;
-            }
-
-            return Execute(configuration.Tags, propertyName, console);
+            return configurationsFile.Configurations.GetValueOrDefault(arguments.ConfigurationKey);
         }
 
-        private static async Task<int> ExecuteMeta(FileInfo configurationsFileName, string configurationKey, string propertyName, IConsole console)
+        private static async Task<int> ExecuteTag(Arguments arguments)
         {
-            var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(configurationsFileName);
-
-            var configuration = configurationsFile.Configurations.GetValueOrDefault(configurationKey);
-
+            var configuration = await GetConfiguration(arguments);
+            
             if (configuration == default)
             {
                 return 1;
             }
 
-            return Execute(configuration.Metas, propertyName, console);
+            return Execute(configuration.Tags, arguments);
+        }
+
+        private static async Task<int> ExecuteMeta(Arguments arguments)
+        {
+            var configuration = await GetConfiguration(arguments);
+            
+            if (configuration == default)
+            {
+                return 1;
+            }
+
+            return Execute(configuration.Metas, arguments);
         }
 
         private static void AttachPropertyNameArgument(Command parentCommand)
@@ -66,7 +77,7 @@ namespace InfrastructureCli.Commands
         {
             var tagCommand = new Command("tag")
             {
-                Handler = CommandHandler.Create<FileInfo, string, string, IConsole>(ExecuteTag),
+                Handler = CommandHandler.Create<Arguments>(ExecuteTag),
                 Description = "Retrieves tag information from a configuration."
             };
 
@@ -79,7 +90,7 @@ namespace InfrastructureCli.Commands
         {
             var metaCommand = new Command("meta")
             {
-                Handler = CommandHandler.Create<FileInfo, string, string, IConsole>(ExecuteMeta),
+                Handler = CommandHandler.Create<Arguments>(ExecuteMeta),
                 Description = "Retrieves meta information from a configuration."
             };
 
@@ -95,7 +106,7 @@ namespace InfrastructureCli.Commands
                 Description = "Retrieves information from a configuration."
             };
 
-            AttachConfigurationNameArgument(getCommand);
+            AttachConfigurationKeyArgument(getCommand);
 
             AttachTagCommand(getCommand);
             AttachMetaCommand(getCommand);

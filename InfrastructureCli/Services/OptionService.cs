@@ -1,11 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.CommandLine.Parsing;
 using System.IO;
+using System.Linq;
 
 namespace InfrastructureCli.Services
 {
     public static class OptionService
     {
         private static readonly string DefaultDirectory = Environment.CurrentDirectory;
+
+        public static Dictionary<string, string> ParseDictionary(ArgumentResult argumentResult)
+        {
+            return argumentResult.Tokens
+                .Select(token => token.Value.Split('=', 2))
+                .ToDictionary(pieces => pieces[0], p => p[1]);
+        }
 
         public static DirectoryInfo DefaultOutputsDirectoryName() => new(DefaultDirectory);
 
