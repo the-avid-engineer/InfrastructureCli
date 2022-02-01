@@ -99,11 +99,11 @@ namespace InfrastructureCli.Services
             }
         }
 
-        private static async Task<bool> WaitForStatusChange(DeployOptions options, string loopStatus, params string[] successStatuses)
+        private static async Task<bool> WaitForStatusChange(DeployOptions options, string successStatus, params string[] loopStatuses)
         {
-            var currentStatus = loopStatus;
+            var currentStatus = loopStatuses[0];
             
-            while (currentStatus == loopStatus)
+            while (loopStatuses.Contains(currentStatus))
             {
                 Console.WriteLine("Wait for 30 seconds");
                 
@@ -121,7 +121,7 @@ namespace InfrastructureCli.Services
                 Console.WriteLine($"Status is {currentStatus}");
             }
 
-            return successStatuses.Contains(currentStatus);
+            return successStatus == currentStatus;
         }
 
         private static async Task<bool> CreateStack(DeployOptions options)
@@ -141,7 +141,7 @@ namespace InfrastructureCli.Services
                 return false;
             }
             
-            return await WaitForStatusChange(options, "CREATE_IN_PROGRESS", "CREATE_COMPLETE");
+            return await WaitForStatusChange(options, "CREATE_COMPLETE", "CREATE_IN_PROGRESS");
         }
 
         private static async Task<bool> UpdateStack(Stack stack, DeployOptions options)
@@ -173,7 +173,7 @@ namespace InfrastructureCli.Services
                     return false;
                 }
 
-                return await WaitForStatusChange(options, "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS", "UPDATE_COMPLETE");
+                return await WaitForStatusChange(options, "UPDATE_COMPLETE", "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS");
             }
             catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
             {
