@@ -20,7 +20,7 @@ namespace InfrastructureCli.Tests.JsonElementExtensions
         [InlineData("Serialize")]
         [InlineData("SpreadArray")]
         [InlineData("SpreadObject")]
-        public static async Task RewriteFixtureTests(string fixtureName)
+        public async Task RewriteFixtureTests(string fixtureName)
         {
             // ARRANGE
 

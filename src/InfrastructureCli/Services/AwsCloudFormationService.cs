@@ -3,6 +3,7 @@ using Amazon.CloudFormation.Model;
 using Amazon.Runtime;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -13,6 +14,13 @@ namespace InfrastructureCli.Services
 {
     internal static class AwsCloudFormationService
     {
+        private class AwsCloudFormationException : Exception
+        {
+            public AwsCloudFormationException(string message) : base(message)
+            {
+            }
+        }
+        
         private static readonly IAmazonCloudFormation Client = new AmazonCloudFormationClient();
 
         private static Parameter GetParameter(KeyValuePair<string, string> parameter)
@@ -99,13 +107,13 @@ namespace InfrastructureCli.Services
             }
         }
 
-        private static async Task<bool> WaitForStatusChange(DeployOptions options, string successStatus, params string[] loopStatuses)
+        private static async Task<bool> WaitForStatusChange(IConsole console, DeployOptions options, string successStatus, params string[] loopStatuses)
         {
             var currentStatus = loopStatuses[0];
             
             while (loopStatuses.Contains(currentStatus))
             {
-                Console.WriteLine("Wait for 30 seconds");
+                console.WriteLine("Wait for 30 seconds");
                 
                 await Task.Delay(TimeSpan.FromSeconds(30));
                 
@@ -113,18 +121,18 @@ namespace InfrastructureCli.Services
 
                 if (stack == null)
                 {
-                    throw new Exception("Stack does not exist.");
+                    throw new AwsCloudFormationException("Stack does not exist.");
                 }
 
                 currentStatus = stack.StackStatus;
                 
-                Console.WriteLine($"Status is {currentStatus}");
+                console.WriteLine($"Status is {currentStatus}");
             }
 
             return successStatus == currentStatus;
         }
 
-        private static async Task<bool> CreateStack(DeployOptions options)
+        private static async Task<bool> CreateStack(IConsole console, DeployOptions options)
         {
             var request = new CreateStackRequest
             {
@@ -141,10 +149,10 @@ namespace InfrastructureCli.Services
                 return false;
             }
             
-            return await WaitForStatusChange(options, "CREATE_COMPLETE", "CREATE_IN_PROGRESS");
+            return await WaitForStatusChange(console, options, "CREATE_COMPLETE", "CREATE_IN_PROGRESS");
         }
 
-        private static async Task<bool> UpdateStack(Stack stack, DeployOptions options)
+        private static async Task<bool> UpdateStack(IConsole console, Stack stack, DeployOptions options)
         {
             try
             {
@@ -173,7 +181,7 @@ namespace InfrastructureCli.Services
                     return false;
                 }
 
-                return await WaitForStatusChange(options, "UPDATE_COMPLETE", "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS");
+                return await WaitForStatusChange(console, options, "UPDATE_COMPLETE", "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS");
             }
             catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
             {
@@ -181,14 +189,14 @@ namespace InfrastructureCli.Services
             }
         }
 
-        public static async Task<bool> Deploy(DeployOptions options)
+        public static async Task<bool> Deploy(IConsole console, DeployOptions options)
         {
             var expectedAccountId = options.Configuration.Metas.GetValueOrDefault("AccountId");
             var currentAccountId = await AwsSecurityTokenService.GetAccountId();
 
             if (currentAccountId != expectedAccountId)
             {
-                throw new Exception($"This configuration is for account {expectedAccountId} but this command is running for account {currentAccountId}.");
+                throw new AwsCloudFormationException($"This configuration is for account {expectedAccountId} but this command is running for account {currentAccountId}.");
             }
 
             var expectedRegion = options.Configuration.Metas.GetValueOrDefault("Region");
@@ -196,17 +204,17 @@ namespace InfrastructureCli.Services
 
             if (currentRegion != expectedRegion)
             {
-                throw new Exception($"This configuration is for region {expectedRegion} but this command is running for region {currentRegion}.");
+                throw new AwsCloudFormationException($"This configuration is for region {expectedRegion} but this command is running for region {currentRegion}.");
             }
 
             var stack = await GetStack(options);
 
             if (stack != null)
             {
-                return await UpdateStack(stack, options);
+                return await UpdateStack(console, stack, options);
             }
 
-            return await CreateStack(options);
+            return await CreateStack(console, options);
         }
     }
 }

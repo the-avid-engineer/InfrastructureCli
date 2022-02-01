@@ -4,7 +4,7 @@ using System.CommandLine.NamingConventionBinder;
 
 namespace InfrastructureCli.Commands
 {
-    internal class InteractiveCommand
+    internal class InteractiveCommand : CommandBase
     {
         public static void Attach(RootCommand rootCommand)
         {

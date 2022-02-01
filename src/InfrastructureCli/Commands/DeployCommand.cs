@@ -15,6 +15,7 @@ namespace InfrastructureCli.Commands
     {
         private record Arguments
         (
+            IConsole Console,
             FileInfo ConfigurationsFileName,
             string ConfigurationKey,
             bool UsePreviousTemplate,
@@ -54,7 +55,7 @@ namespace InfrastructureCli.Commands
             
             var success = configurationsFile.Type switch
             {
-                ConfigurationType.AwsCloudFormation => await AwsCloudFormationService.Deploy(deployOptions),
+                ConfigurationType.AwsCloudFormation => await AwsCloudFormationService.Deploy(arguments.Console, deployOptions),
                 _ => throw new NotImplementedException()
             };
 

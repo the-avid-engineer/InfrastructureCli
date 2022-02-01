@@ -38,7 +38,7 @@ namespace InfrastructureCli.Rewriters
                 return false;
             }
 
-            if (attributeValue == null)
+            if (object.Equals(attributeValue, default))
             {
                 JsonWriter.WriteNullValue();
             }
