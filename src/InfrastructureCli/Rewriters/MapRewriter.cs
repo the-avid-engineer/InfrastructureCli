@@ -53,14 +53,14 @@ namespace InfrastructureCli.Rewriters
                     return template.RewriteGetAttributeValues(attributes);
                 });
 
-            _jsonWriter.WriteStartArray();
+            JsonWriter.WriteStartArray();
 
             foreach (var jsonElement in jsonElements)
             {
-                jsonElement.WriteTo(_jsonWriter);
+                jsonElement.WriteTo(JsonWriter);
             }
 
-            _jsonWriter.WriteEndArray();
+            JsonWriter.WriteEndArray();
         }
 
         private static bool IsArrayMap(JsonProperty[] jsonProperties)
@@ -89,14 +89,14 @@ namespace InfrastructureCli.Rewriters
                     return template.RewriteGetAttributeValues(attributeService);
                 });
 
-            _jsonWriter.WriteStartArray();
+            JsonWriter.WriteStartArray();
 
             foreach (var jsonElement in jsonElements)
             {
-                jsonElement.WriteTo(_jsonWriter);
+                jsonElement.WriteTo(JsonWriter);
             }
 
-            _jsonWriter.WriteEndArray();
+            JsonWriter.WriteEndArray();
         }
     }
 }

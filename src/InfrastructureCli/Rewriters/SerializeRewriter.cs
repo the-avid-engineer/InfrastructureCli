@@ -1,6 +1,4 @@
-using System.Linq;
 using System.Text.Json;
-using InfrastructureCli.Extensions;
 using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Rewriters
@@ -33,7 +31,7 @@ namespace InfrastructureCli.Rewriters
         {
             var serialized = JsonService.Serialize(jsonProperties[0].Value);
 
-            _jsonWriter.WriteStringValue(serialized);
+            JsonWriter.WriteStringValue(serialized);
         }
     }
 }

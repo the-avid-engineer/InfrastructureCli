@@ -40,14 +40,14 @@ namespace InfrastructureCli.Rewriters
                 .SelectMany(jsonElement => jsonElement.RewriteSpreads().EnumerateObject())
                 .ToArray();
 
-            _jsonWriter.WriteStartObject();
+            JsonWriter.WriteStartObject();
 
             foreach (var jsonProperty in allJsonProperties)
             {
-                jsonProperty.WriteTo(_jsonWriter);
+                jsonProperty.WriteTo(JsonWriter);
             }
 
-            _jsonWriter.WriteEndObject();
+            JsonWriter.WriteEndObject();
         }
 
         private bool IsArraySpread(JsonProperty[] jsonProperties)
@@ -64,14 +64,14 @@ namespace InfrastructureCli.Rewriters
                 .SelectMany(jsonElement => jsonElement.RewriteSpreads().EnumerateArray())
                 .ToArray();
 
-            _jsonWriter.WriteStartArray();
+            JsonWriter.WriteStartArray();
 
             foreach (var jsonElement in allJsonElements)
             {
-                jsonElement.WriteTo(_jsonWriter);
+                jsonElement.WriteTo(JsonWriter);
             }
 
-            _jsonWriter.WriteEndArray();
+            JsonWriter.WriteEndArray();
         }
     }
 }

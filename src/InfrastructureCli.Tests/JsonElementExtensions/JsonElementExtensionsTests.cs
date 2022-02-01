@@ -1,12 +1,12 @@
-﻿using InfrastructureCli.Extensions;
-using Shouldly;
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Xunit;
+using InfrastructureCli.Extensions;
 using InfrastructureCli.Services;
+using Shouldly;
+using Xunit;
 
-namespace InfrastructureCli.Tests.Rewriters
+namespace InfrastructureCli.Tests.JsonElementExtensions
 {
     public class JsonElementExtensionsTests
     {

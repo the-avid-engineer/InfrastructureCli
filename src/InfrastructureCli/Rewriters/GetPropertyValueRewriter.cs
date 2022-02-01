@@ -39,15 +39,8 @@ namespace InfrastructureCli.Rewriters
                 return false;
             }
 
-            if (propertyValue as object == null)
-            {
-                _jsonWriter.WriteNullValue();
-            }
-            else
-            {
-                propertyValue.WriteTo(_jsonWriter);
-            }
-
+            propertyValue.WriteTo(JsonWriter);
+            
             return true;
         }
     }

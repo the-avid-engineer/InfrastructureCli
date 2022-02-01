@@ -5,11 +5,11 @@ namespace InfrastructureCli.Rewriters
 {
     public abstract class RewriterBase
     {
-        protected readonly Utf8JsonWriter _jsonWriter;
+        protected readonly Utf8JsonWriter JsonWriter;
 
-        public RewriterBase(Utf8JsonWriter jsonWriter)
+        protected RewriterBase(Utf8JsonWriter jsonWriter)
         {
-            _jsonWriter = jsonWriter;
+            JsonWriter = jsonWriter;
         }
 
         public void Rewrite(JsonElement jsonElement)
@@ -32,33 +32,33 @@ namespace InfrastructureCli.Rewriters
 
         protected virtual void RewriteArray(JsonElement[] jsonElements)
         {
-            _jsonWriter.WriteStartArray();
+            JsonWriter.WriteStartArray();
 
             foreach (var childElement in jsonElements)
             {
                 Rewrite(childElement);
             }
 
-            _jsonWriter.WriteEndArray();
+            JsonWriter.WriteEndArray();
         }
 
         protected virtual void RewriteObject(JsonProperty[] jsonProperties)
         {
-            _jsonWriter.WriteStartObject();
+            JsonWriter.WriteStartObject();
 
             foreach (var jsonProperty in jsonProperties)
             {
-                _jsonWriter.WritePropertyName(jsonProperty.Name);
+                JsonWriter.WritePropertyName(jsonProperty.Name);
 
                 Rewrite(jsonProperty.Value);
             }
 
-            _jsonWriter.WriteEndObject();
+            JsonWriter.WriteEndObject();
         }
 
         protected virtual void RewriteScalar(JsonElement jsonElement)
         {
-            jsonElement.WriteTo(_jsonWriter);
+            jsonElement.WriteTo(JsonWriter);
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.CommandLine;
-using System.IO;
-using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Commands
 {

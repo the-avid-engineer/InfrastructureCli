@@ -28,7 +28,7 @@ namespace InfrastructureCli.Extensions
             foreach (var (key, value) in attributes)
             {
                 templateJson = templateJson.Replace("@{" + key + "}", value?.ToString()?.Replace("\"", "\\\""));
-            };
+            }
 
             jsonElement = JsonSerializer.Deserialize<JsonElement>(templateJson);
 

@@ -40,13 +40,13 @@ namespace InfrastructureCli.Rewriters
 
             if (attributeValue == null)
             {
-                _jsonWriter.WriteNullValue();
+                JsonWriter.WriteNullValue();
             }
             else
             {
                 var jsonElement = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(attributeValue));
 
-                jsonElement.WriteTo(_jsonWriter);
+                jsonElement.WriteTo(JsonWriter);
             }
 
             return true;

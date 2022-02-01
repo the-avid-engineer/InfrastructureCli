@@ -1,15 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!--Application-->
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!--Build-->
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <!--Package-->
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Chris Philips</Authors>
+    <Copyright>2021 © Chris Philips</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/the-avid-engineer/InfrastructureCli</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>en</NeutralLanguage>
+    <PackageTags>Infrastructure CLI Helper</PackageTags>
+    <Description>Provides a base CLI that can be extended.</Description>
+    <PackageIconUrl />
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="AWSSDK.CloudFormation" Version="3.7.5.27" />
-    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.1.73" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
+    <PackageReference Include="AWSSDK.CloudFormation" Version="3.7.7.16" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.1.110" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
+    <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta2.21617.1" />
   </ItemGroup>
 
 </Project>
