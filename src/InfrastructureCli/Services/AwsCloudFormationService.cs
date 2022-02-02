@@ -185,7 +185,7 @@ namespace InfrastructureCli.Services
             }
             catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
             {
-                return false;
+                return true;
             }
         }
 
