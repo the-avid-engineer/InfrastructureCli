@@ -21,7 +21,8 @@ namespace InfrastructureCli.Commands
             bool UsePreviousTemplate,
             FileInfo TemplateFileName,
             bool UsePreviousParameters,
-            Dictionary<string, string> Parameters
+            Dictionary<string, string> Parameters,
+            FileInfo? FinalTemplateFileName
         );
         
         private static async Task<int> Execute(Arguments arguments)
@@ -43,6 +44,11 @@ namespace InfrastructureCli.Commands
                 .RewriteSpreads()
                 .RewriteGetPropertyValues()
                 .RewriteSerializes();
+
+            if (arguments.FinalTemplateFileName != null)
+            {
+                await FileService.SerializeToFile(template, arguments.FinalTemplateFileName);
+            }
 
             var deployOptions = new DeployOptions
             (
@@ -105,6 +111,16 @@ namespace InfrastructureCli.Commands
             parentCommand.AddOption(usePreviousParameters);
         }
 
+        private static void AttachFinalTemplateFileNameOption(Command parentCommand)
+        {
+            var finalTemplateFileName = new Option<FileInfo>("--final-template-file-name")
+            {
+                Description = "Use this if you want the final (i.e., rewritten) template to be written to a file."
+            };
+            
+            parentCommand.AddOption(finalTemplateFileName);
+        }
+
         public static void Attach(RootCommand rootCommand)
         {
             var deployCommand = new Command("deploy")
@@ -120,6 +136,7 @@ namespace InfrastructureCli.Commands
             AttachUsePreviousParametersOption(deployCommand);
 
             AttachConfigurationsFileNameOption(deployCommand);
+            AttachFinalTemplateFileNameOption(deployCommand);
 
             rootCommand.AddCommand(deployCommand);
         }
