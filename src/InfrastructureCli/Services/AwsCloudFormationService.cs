@@ -4,6 +4,7 @@ using Amazon.Runtime;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -182,7 +183,19 @@ namespace InfrastructureCli.Services
                 {
                     request.TemplateBody = GetTemplateBody(options.Template);
                 }
+                
+                console.Out.WriteLine("Parameters:");
+                
+                foreach (var parameter in request.Parameters)
+                {
+                    console.Out.WriteLine($"{parameter.ParameterKey} = {parameter.ParameterValue}");
+                }
 
+                console.Out.WriteLine();
+                
+                console.Out.WriteLine("Template Body:");
+                console.Out.WriteLine(request.TemplateBody);
+                
                 var response = await Client.UpdateStackAsync(request);
 
                 if (response.HttpStatusCode != HttpStatusCode.OK)
@@ -194,7 +207,8 @@ namespace InfrastructureCli.Services
             }
             catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
             {
-                console.Out.Write($"No updates are to be performed. (UsePreviousTemplate = ${options.UsePreviousTemplate}, UsePreviousParameters = ${options.UsePreviousParameters})");
+                console.Out.WriteLine("No updates are to be performed.");
+                
                 return true;
             }
         }

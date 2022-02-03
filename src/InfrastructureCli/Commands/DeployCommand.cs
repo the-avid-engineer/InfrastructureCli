@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.IO;
 using System.CommandLine.NamingConventionBinder;
 using System.IO;
 using System.Text.Json;
@@ -49,6 +50,9 @@ namespace InfrastructureCli.Commands
             {
                 await FileService.SerializeToFile(template, arguments.FinalTemplateFileName);
             }
+            
+            arguments.Console.Out.WriteLine($"UsePreviousParameters: {arguments.UsePreviousParameters}");
+            arguments.Console.Out.WriteLine($"UsePreviousTemplate: {arguments.UsePreviousTemplate}");
 
             var deployOptions = new DeployOptions
             (
@@ -87,6 +91,8 @@ namespace InfrastructureCli.Commands
                     "If you have already deployed the template and don't need to deploy it again, use this option."
             };
             
+            usePreviousTemplate.SetDefaultValue(false);
+            
             parentCommand.AddOption(usePreviousTemplate);
         }
 
@@ -108,6 +114,8 @@ namespace InfrastructureCli.Commands
             {
                 Description = "Use this if you want to use the previous parameter values by default."
             };
+            
+            usePreviousParameters.SetDefaultValue(false);
             
             parentCommand.AddOption(usePreviousParameters);
         }
