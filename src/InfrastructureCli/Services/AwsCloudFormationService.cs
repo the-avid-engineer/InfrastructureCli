@@ -194,6 +194,7 @@ namespace InfrastructureCli.Services
             }
             catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
             {
+                console.Out.Write($"No updates are to be performed. (UsePreviousTemplate = ${options.UsePreviousTemplate}, UsePreviousParameters = ${options.UsePreviousParameters})");
                 return true;
             }
         }
