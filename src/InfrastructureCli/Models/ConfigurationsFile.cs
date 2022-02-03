@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
 
 namespace InfrastructureCli.Models
 {
     public record ConfigurationsFile
     (
-        ConfigurationType Type,
+        TemplateType TemplateType,
+        Dictionary<string, JsonElement> TemplateOptions, 
         Dictionary<string, Configuration> Configurations
     );
 }

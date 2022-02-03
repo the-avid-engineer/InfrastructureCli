@@ -39,7 +39,7 @@ namespace InfrastructureCli.Services
             return JsonSerializer.Serialize(t, Flat);
         }
 
-        public static TOut Anonymize<TIn, TOut>(TIn tIn)
+        public static TOut Convert<TIn, TOut>(TIn tIn)
         {
             var json = Serialize(tIn);
             

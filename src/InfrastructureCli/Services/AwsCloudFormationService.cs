@@ -60,6 +60,13 @@ namespace InfrastructureCli.Services
             return parameters.Select(GetParameter).ToList();
         }
 
+        private static List<string> GetCapabilities(Dictionary<string, JsonElement> templateOptions)
+        {
+            return templateOptions.TryGetValue("Capabilities", out var capabilitiesElement)
+                ? JsonService.Convert<JsonElement, List<string>>(capabilitiesElement)
+                : new List<string>();
+        }
+        
         private static List<Parameter> GetParameters(Dictionary<string, string> parameters, Stack stack)
         {
             var parameterDictionary = GetParameters(parameters)
@@ -139,7 +146,8 @@ namespace InfrastructureCli.Services
                 StackName = GetStackName(options.Configuration),
                 Tags = GetTags(options.Configuration),
                 TemplateBody = GetTemplateBody(options.Template),
-                Parameters = GetParameters(options.Parameters)
+                Parameters = GetParameters(options.Parameters),
+                Capabilities = GetCapabilities(options.TemplateOptions),
             };
 
             var response = await Client.CreateStackAsync(request);
@@ -162,7 +170,8 @@ namespace InfrastructureCli.Services
                     Tags = GetTags(options.Configuration),
                     Parameters = options.UsePreviousParameters
                         ? GetParameters(options.Parameters, stack)
-                        : GetParameters(options.Parameters)
+                        : GetParameters(options.Parameters),
+                    Capabilities = GetCapabilities(options.TemplateOptions),
                 };
 
                 if (options.UsePreviousTemplate)

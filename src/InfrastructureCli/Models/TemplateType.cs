@@ -1,6 +1,6 @@
 ﻿namespace InfrastructureCli.Models
 {
-    public enum ConfigurationType
+    public enum TemplateType
     {
         AwsCloudFormation,
     }

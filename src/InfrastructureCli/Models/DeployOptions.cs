@@ -8,6 +8,7 @@ namespace InfrastructureCli.Models
         Configuration Configuration,
         bool UsePreviousTemplate,
         JsonElement Template,
+        Dictionary<string, JsonElement> TemplateOptions,
         bool UsePreviousParameters,
         Dictionary<string, string> Parameters
     );

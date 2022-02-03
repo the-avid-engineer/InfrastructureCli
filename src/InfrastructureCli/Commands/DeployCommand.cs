@@ -55,13 +55,14 @@ namespace InfrastructureCli.Commands
                 Configuration: configuration,
                 UsePreviousTemplate: arguments.UsePreviousTemplate,
                 Template: template,
+                TemplateOptions: configurationsFile.TemplateOptions,
                 UsePreviousParameters: arguments.UsePreviousParameters,
                 Parameters: arguments.Parameters
             );
             
-            var success = configurationsFile.Type switch
+            var success = configurationsFile.TemplateType switch
             {
-                ConfigurationType.AwsCloudFormation => await AwsCloudFormationService.Deploy(arguments.Console, deployOptions),
+                TemplateType.AwsCloudFormation => await AwsCloudFormationService.Deploy(arguments.Console, deployOptions),
                 _ => throw new NotImplementedException()
             };
 
