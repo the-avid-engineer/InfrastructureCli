@@ -169,17 +169,14 @@ namespace InfrastructureCli.Services
                 {
                     StackName = GetStackName(options.Configuration),
                     Tags = GetTags(options.Configuration),
+                    UsePreviousTemplate = options.UsePreviousTemplate,
                     Parameters = options.UsePreviousParameters
                         ? GetParameters(options.Parameters, stack)
                         : GetParameters(options.Parameters),
                     Capabilities = GetCapabilities(options.TemplateOptions),
                 };
 
-                if (options.UsePreviousTemplate)
-                {
-                    request.UsePreviousTemplate = true;
-                }
-                else
+                if (!options.UsePreviousTemplate)
                 {
                     request.TemplateBody = GetTemplateBody(options.Template);
                 }
@@ -188,14 +185,29 @@ namespace InfrastructureCli.Services
                 
                 foreach (var parameter in request.Parameters)
                 {
-                    console.Out.WriteLine($"{parameter.ParameterKey} = {parameter.ParameterValue}");
+                    if (parameter.UsePreviousValue)
+                    {
+                        console.Out.WriteLine($"{parameter.ParameterKey} = (Use Previous Value)");
+                    }
+                    else
+                    {
+                        console.Out.WriteLine($"{parameter.ParameterKey} = {parameter.ParameterValue}");
+                    }
                 }
 
                 console.Out.WriteLine();
                 
                 console.Out.WriteLine("Template Body:");
-                console.Out.WriteLine(request.TemplateBody);
                 
+                if (request.UsePreviousTemplate)
+                {
+                    console.Out.WriteLine("(Use Previous Template)");
+                }
+                else
+                {
+                    console.Out.WriteLine(request.TemplateBody);
+                }
+
                 var response = await Client.UpdateStackAsync(request);
 
                 if (response.HttpStatusCode != HttpStatusCode.OK)
