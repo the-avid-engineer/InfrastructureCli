@@ -12,6 +12,7 @@ namespace InfrastructureCli.Services
         {
             WriteIndented = true,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            IgnoreNullValues = true,
             Converters =
             {
                 new JsonStringEnumConverter(),
