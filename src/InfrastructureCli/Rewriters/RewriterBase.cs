@@ -1,12 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace InfrastructureCli.Rewriters
 {
     internal abstract class RewriterBase : IRewriter
     {
+        protected bool IsFunctionObject(IReadOnlyDictionary<string, JsonElement> jsonProperties)
+        {
+            return jsonProperties.Count == 1 &&
+                   jsonProperties.Single().Key.StartsWith("@Fn::");
+        }
+        
+        protected bool TryGetArgumentsElement(IReadOnlyDictionary<string, JsonElement> jsonProperties, string functionName, out JsonElement argumentsElement)
+        {
+            argumentsElement = default!;
+            
+            return jsonProperties.Count == 1 &&
+                   jsonProperties.TryGetValue($"@Fn::{functionName}", out argumentsElement);
+        }
+        
         public virtual JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
             return jsonElement.ValueKind switch

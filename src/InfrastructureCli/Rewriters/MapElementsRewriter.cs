@@ -9,18 +9,17 @@ namespace InfrastructureCli.Rewriters
     {
         protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
         {
-            if (jsonProperties.Count != 1 ||
-                jsonProperties.TryGetValue("@MapElements", out var mapElementsBodyElement) != true ||
-                mapElementsBodyElement.ValueKind != JsonValueKind.Array ||
-                mapElementsBodyElement.GetArrayLength() != 2 ||
-                mapElementsBodyElement[0].ValueKind != JsonValueKind.Array)
+            if (TryGetArgumentsElement(jsonProperties, "MapElements", out var mapElementsArgumentsElement) != true ||
+                mapElementsArgumentsElement.ValueKind != JsonValueKind.Array ||
+                mapElementsArgumentsElement.GetArrayLength() != 2 ||
+                mapElementsArgumentsElement[0].ValueKind != JsonValueKind.Array)
             {
                 return base.RewriteObject(jsonProperties, rootRewriter);
             }
             
-            var template = mapElementsBodyElement[1];
+            var template = mapElementsArgumentsElement[1];
             
-            var jsonElements = mapElementsBodyElement[0]
+            var jsonElements = mapElementsArgumentsElement[0]
                 .EnumerateArray()
                 .Select((value, index) =>
                 {

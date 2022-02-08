@@ -9,15 +9,14 @@ namespace InfrastructureCli.Rewriters
     {
         protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
         {
-            if (jsonProperties.Count != 1 ||
-                jsonProperties.TryGetValue("@Serialize", out var template) != true)
+            if (TryGetArgumentsElement(jsonProperties, "Serialize", out var serializeArgumentsElement) != true)
             {
                 return base.RewriteObject(jsonProperties, rootRewriter);
             }
             
-            template = rootRewriter.Rewrite(template);
+            serializeArgumentsElement = rootRewriter.Rewrite(serializeArgumentsElement);
             
-            var serialized = JsonService.Serialize(template);
+            var serialized = JsonService.Serialize(serializeArgumentsElement);
 
             return Rewrite(jsonWriter =>
             {

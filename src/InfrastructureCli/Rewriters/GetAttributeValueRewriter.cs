@@ -19,7 +19,7 @@ namespace InfrastructureCli.Rewriters
         
             foreach (var (key, value) in _attributes)
             {
-                templateJson = templateJson.Replace("@{" + key + "}", value?.ToString()?.Replace("\"", "\\\""));
+                templateJson = templateJson.Replace($"@{{{key}}}", value?.ToString()?.Replace("\"", "\\\""));
             }
 
             var implicitRewritten = JsonService.Deserialize<JsonElement>(templateJson);
@@ -29,14 +29,13 @@ namespace InfrastructureCli.Rewriters
         
         protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
         {
-            if (jsonProperties.Count != 1 ||
-                jsonProperties.TryGetValue("@GetAttributeValue", out var attributeNameElement) != true ||
-                attributeNameElement.ValueKind != JsonValueKind.String)
+            if (TryGetArgumentsElement(jsonProperties, "GetAttributeValue", out var getAttributeValueArgumentsElement) != true ||
+                getAttributeValueArgumentsElement.ValueKind != JsonValueKind.String)
             {
                 return base.RewriteObject(jsonProperties, rootRewriter);
             }
 
-            var attributeName = attributeNameElement.GetString()!;
+            var attributeName = getAttributeValueArgumentsElement.GetString()!;
 
             if (_attributes.TryGetValue(attributeName, out var attributeValue) == false)
             {

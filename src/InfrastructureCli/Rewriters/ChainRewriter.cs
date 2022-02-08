@@ -13,7 +13,7 @@ namespace InfrastructureCli.Rewriters
             new SpreadElementsRewriter(),
             new SpreadPropertiesRewriter(),
             new SerializeRewriter(),
-            new MultiplyRewriter()
+            new IntProductionRewriter()
         );
         
         private readonly IRewriter[] _rewriters;

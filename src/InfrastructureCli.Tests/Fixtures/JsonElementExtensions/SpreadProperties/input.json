@@ -1,5 +1,5 @@
 {
-  "@SpreadProperties": [
+  "@Fn::SpreadProperties": [
     {
       "a": "a",
       "b": "b",

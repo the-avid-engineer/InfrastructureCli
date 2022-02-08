@@ -8,14 +8,13 @@ namespace InfrastructureCli.Rewriters
     {
         protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
         {
-            if (jsonProperties.Count != 1 ||
-                jsonProperties.TryGetValue("@SpreadProperties", out var spreadPropertiesBodyElement) != true ||
-                spreadPropertiesBodyElement.ValueKind != JsonValueKind.Array)
+            if (TryGetArgumentsElement(jsonProperties, "SpreadProperties", out var spreadPropertiesArgumentsElement) != true ||
+                spreadPropertiesArgumentsElement.ValueKind != JsonValueKind.Array)
             {
                 return base.RewriteObject(jsonProperties, rootRewriter);
             }
 
-            var allParentElements = spreadPropertiesBodyElement.EnumerateArray();
+            var allParentElements = spreadPropertiesArgumentsElement.EnumerateArray();
 
             if (allParentElements.Any(parentElement => parentElement.ValueKind != JsonValueKind.Object))
             {

@@ -9,20 +9,24 @@ namespace InfrastructureCli.Rewriters
     {
         protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
         {
-            if (jsonProperties.Count != 1 ||
-                jsonProperties.TryGetValue("@UsingAttributes", out var usingAttributesBodyElement) != true ||
-                usingAttributesBodyElement.ValueKind != JsonValueKind.Array ||
-                usingAttributesBodyElement.GetArrayLength() != 2 ||
-                usingAttributesBodyElement[0].ValueKind != JsonValueKind.Object)
+            if (TryGetArgumentsElement(jsonProperties, "UsingAttributes", out var usingAttributesArgumentsElement) != true ||
+                usingAttributesArgumentsElement.ValueKind != JsonValueKind.Array ||
+                usingAttributesArgumentsElement.GetArrayLength() != 2 ||
+                usingAttributesArgumentsElement[0].ValueKind != JsonValueKind.Object)
             {
                 return base.RewriteObject(jsonProperties, rootRewriter);
             }
 
-            var template = usingAttributesBodyElement[1];
+            var template = usingAttributesArgumentsElement[1];
             
-            var attributes = usingAttributesBodyElement[0]
+            var attributes = usingAttributesArgumentsElement[0]
                 .EnumerateObject()
                 .ToDictionary(property => property.Name, property => property.Value);
+
+            if (IsFunctionObject(attributes))
+            {
+                return base.RewriteObject(jsonProperties, rootRewriter);
+            }
             
             var augmentedRootRewriter = new ChainRewriter
             (

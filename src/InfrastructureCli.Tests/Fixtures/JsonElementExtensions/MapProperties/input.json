@@ -1,5 +1,5 @@
 {
-  "@MapProperties": [
+  "@Fn::MapProperties": [
     {
       "0": "",
       "1": 0,
@@ -11,10 +11,10 @@
     },
     {
       "Key": {
-        "@GetAttributeValue": "PropertyKey"
+        "@Fn::GetAttributeValue": "PropertyKey"
       },
       "Value": {
-        "@GetAttributeValue": "PropertyValue"
+        "@Fn::GetAttributeValue": "PropertyValue"
       },
       "KeyAndValue": "@{PropertyKey}:@{PropertyValue}"
     }

@@ -1,10 +1,9 @@
 [
   {
-    "Type": "A",
-    "Description": "I Am Type A"
+    "SomeValueTimesTwo": 400
   },
   {
-    "Type": "B",
-    "Description": "I Am Type B"
+    "SomeMinValueTimesTwo": 2,
+    "SomeMaxValueTimesTwo": 402
   }
 ]

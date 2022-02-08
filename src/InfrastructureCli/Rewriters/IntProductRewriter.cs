@@ -4,18 +4,17 @@ using System.Text.Json;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal sealed class MultiplyRewriter : RewriterBase
+    internal sealed class IntProductionRewriter : RewriterBase
     {
         protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
         {
-            if (jsonProperties.Count != 1 ||
-                jsonProperties.TryGetValue("@IntProduct", out var mapPropertiesBodyElement) != true ||
-                mapPropertiesBodyElement.ValueKind != JsonValueKind.Array)
+            if (TryGetArgumentsElement(jsonProperties, "IntProduct", out var getIntProductArgumentsElement) != true ||
+                getIntProductArgumentsElement.ValueKind != JsonValueKind.Array)
             {
                 return base.RewriteObject(jsonProperties, rootRewriter);
             }
 
-            var allElements = mapPropertiesBodyElement.EnumerateArray().ToArray();
+            var allElements = getIntProductArgumentsElement.EnumerateArray().ToArray();
 
             if (allElements.Any(element => element.ValueKind != JsonValueKind.Number))
             {

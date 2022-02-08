@@ -1,5 +1,5 @@
 {
-  "@MapElements": [
+  "@Fn::MapElements": [
     [
       "",
       0,
@@ -11,10 +11,10 @@
     ],
     {
       "Index": {
-        "@GetAttributeValue": "ElementIndex"
+        "@Fn::GetAttributeValue": "ElementIndex"
       },
       "Value": {
-        "@GetAttributeValue": "ElementValue"
+        "@Fn::GetAttributeValue": "ElementValue"
       },
       "IndexAndValue": "@{ElementIndex}:@{ElementValue}"
     }

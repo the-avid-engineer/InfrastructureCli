@@ -1,6 +1,6 @@
 {
   "Foo": {
-    "@GetPropertyValue": [
+    "@Fn::GetPropertyValue": [
       {
         "Key1": "Bar",
         "Key2": "Baz"

@@ -1,12 +1,12 @@
 {
-  "@UsingAttributes": [
+  "@Fn::UsingAttributes": [
     {
       "BlueTasks": 2
     },
     {
-      "@IntProduct": [
+      "@Fn::IntProduct": [
         {
-          "@GetAttributeValue": "BlueTasks"
+          "@Fn::GetAttributeValue": "BlueTasks"
         },
         2
       ]

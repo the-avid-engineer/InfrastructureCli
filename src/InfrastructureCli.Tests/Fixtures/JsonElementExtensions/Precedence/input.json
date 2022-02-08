@@ -1,33 +1,75 @@
 {
-  "@MapElements": [
+  "@Fn::MapElements": [
     [
       {
-        "Type": "A"
+        "Type": "First",
+        "FirstOptions": {
+          "SomeValue": 200
+        }
       },
       {
-        "Type": "B"
+        "Type": "Second",
+        "SecondOptions": {
+          "SomeMinValue": 1,
+          "SomeMaxValue": 201
+        }
       }
     ],
     {
-      "@UsingAttributes": [
+      "@Fn::UsingAttributes": [
         {
-          "@GetAttributeValue": "ElementValue"
+          "@Fn::GetAttributeValue": "ElementValue"
         },
         {
-          "Type": {
-            "@GetAttributeValue": "Type"
-          },
-          "Description": {
-            "@GetPropertyValue": [
-              {
-                "A": "I Am Type A",
-                "B": "I Am Type B"
+          "@Fn::GetPropertyValue": [
+            {
+              "First": {
+                "@Fn::UsingAttributes": [
+                  {
+                    "@Fn::GetAttributeValue": "FirstOptions"
+                  },
+                  {
+                    "SomeValueTimesTwo": {
+                      "@Fn::IntProduct": [
+                        {
+                          "@Fn::GetAttributeValue": "SomeValue"
+                        },
+                        2
+                      ]
+                    }
+                  }
+                ]
               },
-              {
-                "@GetAttributeValue": "Type"
+              "Second": {
+                "@Fn::UsingAttributes": [
+                  {
+                    "@Fn::GetAttributeValue": "SecondOptions"
+                  },
+                  {
+                    "SomeMinValueTimesTwo": {
+                      "@Fn::IntProduct": [
+                        {
+                          "@Fn::GetAttributeValue": "SomeMinValue"
+                        },
+                        2
+                      ]
+                    },
+                    "SomeMaxValueTimesTwo": {
+                      "@Fn::IntProduct": [
+                        {
+                          "@Fn::GetAttributeValue": "SomeMaxValue"
+                        },
+                        2
+                      ]
+                    }
+                  }
+                ]
               }
-            ]
-          }
+            },
+            {
+              "@Fn::GetAttributeValue": "Type"
+            }
+          ]
         }
       ]
     }

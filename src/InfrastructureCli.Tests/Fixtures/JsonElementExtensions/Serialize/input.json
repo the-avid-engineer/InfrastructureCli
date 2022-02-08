@@ -1,28 +1,28 @@
 {
   "NESTED": {
-    "@Serialize": {
+    "@Fn::Serialize": {
       "Foo": {
-        "@Serialize": "Bar"
+        "@Fn::Serialize": "Bar"
       }
     }
   },
   "string": {
-    "@Serialize": ""
+    "@Fn::Serialize": ""
   },
   "true": {
-    "@Serialize": true
+    "@Fn::Serialize": true
   },
   "false": {
-    "@Serialize": false
+    "@Fn::Serialize": false
   },
   "null": {
-    "@Serialize": null
+    "@Fn::Serialize": null
   },
   "array": {
-    "@Serialize": []
+    "@Fn::Serialize": []
   },
   "object": {
-    "@Serialize": {
+    "@Fn::Serialize": {
       "foo": "bar"
     }
   }
