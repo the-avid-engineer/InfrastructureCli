@@ -94,9 +94,9 @@ namespace InfrastructureCli.Services
             return JsonService.Serialize(template);
         }
 
-        private static async Task<Stack?> GetStack(DeployOptions options)
+        private static async Task<Stack?> GetStack(Configuration configuration)
         {
-            var stackName = GetStackName(options.Configuration);
+            var stackName = GetStackName(configuration);
             
             try
             {
@@ -115,7 +115,7 @@ namespace InfrastructureCli.Services
             }
         }
 
-        private static async Task<bool> WaitForStatusChange(IConsole console, DeployOptions options, string successStatus, params string[] loopStatuses)
+        private static async Task<bool> WaitForStatusChange(IConsole console, Configuration configuration, string successStatus, params string[] loopStatuses)
         {
             var currentStatus = loopStatuses[0];
             
@@ -125,7 +125,7 @@ namespace InfrastructureCli.Services
                 
                 await Task.Delay(TimeSpan.FromSeconds(30));
                 
-                var stack = await GetStack(options);
+                var stack = await GetStack(configuration);
 
                 if (stack == null)
                 {
@@ -158,7 +158,7 @@ namespace InfrastructureCli.Services
                 return false;
             }
             
-            return await WaitForStatusChange(console, options, "CREATE_COMPLETE", "CREATE_IN_PROGRESS");
+            return await WaitForStatusChange(console, options.Configuration, "CREATE_COMPLETE", "CREATE_IN_PROGRESS");
         }
 
         private static async Task<bool> UpdateStack(IConsole console, Stack stack, DeployOptions options)
@@ -215,7 +215,7 @@ namespace InfrastructureCli.Services
                     return false;
                 }
 
-                return await WaitForStatusChange(console, options, "UPDATE_COMPLETE", "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS");
+                return await WaitForStatusChange(console, options.Configuration, "UPDATE_COMPLETE", "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS");
             }
             catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
             {
@@ -225,25 +225,19 @@ namespace InfrastructureCli.Services
             }
         }
 
+        public static async Task<string?> Get(GetOptions options)
+        {
+            var stack = await GetStack(options.Configuration);
+
+            return stack?
+                .Outputs
+                .SingleOrDefault(output => output.ExportName == options.PropertyName)?
+                .OutputValue;
+        }
+        
         public static async Task<bool> Deploy(IConsole console, DeployOptions options)
         {
-            var expectedAccountId = options.Configuration.Metas.GetValueOrDefault("AccountId");
-            var currentAccountId = await AwsSecurityTokenService.GetAccountId();
-
-            if (currentAccountId != expectedAccountId)
-            {
-                throw new AwsCloudFormationException($"This configuration is for account {expectedAccountId} but this command is running for account {currentAccountId}.");
-            }
-
-            var expectedRegion = options.Configuration.Metas.GetValueOrDefault("Region");
-            var currentRegion = FallbackRegionFactory.GetRegionEndpoint().SystemName;
-
-            if (currentRegion != expectedRegion)
-            {
-                throw new AwsCloudFormationException($"This configuration is for region {expectedRegion} but this command is running for region {currentRegion}.");
-            }
-
-            var stack = await GetStack(options);
+            var stack = await GetStack(options.Configuration);
 
             if (stack != null)
             {

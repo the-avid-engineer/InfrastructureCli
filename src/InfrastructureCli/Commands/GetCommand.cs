@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
 using System.IO;
@@ -18,10 +19,29 @@ namespace InfrastructureCli.Commands
             IConsole Console
         );
         
-        private static int Execute(Dictionary<string, string> properties, Arguments arguments)
+        private static async Task<int> Execute(Arguments arguments)
         {
-            var propertyValue = properties.GetValueOrDefault(arguments.PropertyName);
+            var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(arguments.ConfigurationsFileName);
 
+            var configuration = configurationsFile.Configurations.GetValueOrDefault(arguments.ConfigurationKey);
+
+            if (configuration == default)
+            {
+                return 1;
+            }
+            
+            var getOptions = new GetOptions
+            (
+                Configuration: configuration,
+                PropertyName: arguments.PropertyName
+            );
+            
+            var propertyValue = configurationsFile.TemplateType switch
+            {
+                TemplateType.AwsCloudFormation => await AwsCloudFormationService.Get(getOptions),
+                _ => throw new NotImplementedException()
+            };
+            
             if (propertyValue == default)
             {
                 return 2;
@@ -39,30 +59,6 @@ namespace InfrastructureCli.Commands
             return configurationsFile.Configurations.GetValueOrDefault(arguments.ConfigurationKey);
         }
 
-        private static async Task<int> ExecuteTag(Arguments arguments)
-        {
-            var configuration = await GetConfiguration(arguments);
-            
-            if (configuration == default)
-            {
-                return 1;
-            }
-
-            return Execute(configuration.Tags, arguments);
-        }
-
-        private static async Task<int> ExecuteMeta(Arguments arguments)
-        {
-            var configuration = await GetConfiguration(arguments);
-            
-            if (configuration == default)
-            {
-                return 1;
-            }
-
-            return Execute(configuration.Metas, arguments);
-        }
-
         private static void AttachPropertyNameArgument(Command parentCommand)
         {
             var propertyName = new Argument<string>("property-name")
@@ -73,45 +69,17 @@ namespace InfrastructureCli.Commands
             parentCommand.AddArgument(propertyName);
         }
 
-        private static void AttachTagCommand(Command parentCommand)
-        {
-            var tagCommand = new Command("tag")
-            {
-                Handler = CommandHandler.Create<Arguments>(ExecuteTag),
-                Description = "Retrieves tag information from a configuration."
-            };
-
-            AttachPropertyNameArgument(tagCommand);
-
-            parentCommand.AddCommand(tagCommand);
-        }
-
-        private static void AttachMetaCommand(Command parentCommand)
-        {
-            var metaCommand = new Command("meta")
-            {
-                Handler = CommandHandler.Create<Arguments>(ExecuteMeta),
-                Description = "Retrieves meta information from a configuration."
-            };
-
-            AttachPropertyNameArgument(metaCommand);
-
-            parentCommand.AddCommand(metaCommand);
-        }
-
         public static void Attach(RootCommand rootCommand)
         {
             var getCommand = new Command("get")
             {
-                Description = "Retrieves information from a configuration."
+                Handler = CommandHandler.Create<Arguments>(Execute),
+                Description = "Retrieves information from a deployment.",
             };
 
-            AttachConfigurationKeyArgument(getCommand);
-
-            AttachTagCommand(getCommand);
-            AttachMetaCommand(getCommand);
-
             AttachConfigurationsFileNameOption(getCommand);
+            AttachConfigurationKeyArgument(getCommand);
+            AttachPropertyNameArgument(getCommand);
 
             rootCommand.AddCommand(getCommand);
         }
