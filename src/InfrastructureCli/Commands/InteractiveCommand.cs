@@ -14,6 +14,8 @@ namespace InfrastructureCli.Commands
                 {
                     var lastErrorCode = 0;
 
+                    var lastArgs = Array.Empty<string>();
+
                     while (true)
                     {
                         console.Out.Write("> ");
@@ -25,11 +27,14 @@ namespace InfrastructureCli.Commands
                             break;
                         }
 
-                        var args = input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (input != "repeat")
+                        {
+                            lastArgs = input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        }
 
                         try
                         {
-                            lastErrorCode = await rootCommand.InvokeAsync(args, console);
+                            lastErrorCode = await rootCommand.InvokeAsync(lastArgs, console);
                         }
                         catch (Exception exception)
                         {
