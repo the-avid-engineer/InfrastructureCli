@@ -1,0 +1,15 @@
+{
+  "@UsingAttributes": [
+    {
+      "BlueTasks": 2
+    },
+    {
+      "@IntProduct": [
+        {
+          "@GetAttributeValue": "BlueTasks"
+        },
+        2
+      ]
+    }
+  ]
+}

@@ -369,3 +369,21 @@ Would be rewritten as:
     "PolicyJson": "{\"Foo\":\"Bar\"}"
 }
 ```
+
+### @IntProduct
+
+An object with a single key of `@IntProduct` and a value of an array of numbers is recognized by this rewriter. The output of this function is equivalent to the PI product notation in math, and will return `1` for an empty set (a.k.a., the empty product). This function is written to handle `int` numbers, and will likely throw if anything bigger is used. (It's always possible to add a `@LongProduct` in the future if bigger numbers are needed.)
+
+For example:
+
+```
+{
+    "@IntProduct": [1,2,3,4]
+}
+```
+
+Will be rewritten as:
+
+```
+24
+```

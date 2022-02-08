@@ -20,6 +20,7 @@ namespace InfrastructureCli.Tests.JsonElementExtensions
         [InlineData("SpreadElements")]
         [InlineData("SpreadProperties")]
         [InlineData("Serialize")]
+        [InlineData("IntProduct")]
         [InlineData("Precedence")]
         public async Task RewriteFixtureTests(string fixtureName)
         {
