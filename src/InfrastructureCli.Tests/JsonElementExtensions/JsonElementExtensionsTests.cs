@@ -15,11 +15,12 @@ namespace InfrastructureCli.Tests.JsonElementExtensions
         [InlineData("GetAttributeValueUndefined")]
         [InlineData("GetPropertyValueDefined")]
         [InlineData("GetPropertyValueUndefined")]
-        [InlineData("MapArray")]
-        [InlineData("MapObject")]
+        [InlineData("MapElements")]
+        [InlineData("MapProperties")]
+        [InlineData("SpreadElements")]
+        [InlineData("SpreadProperties")]
         [InlineData("Serialize")]
-        [InlineData("SpreadArray")]
-        [InlineData("SpreadObject")]
+        [InlineData("Precedence")]
         public async Task RewriteFixtureTests(string fixtureName)
         {
             // ARRANGE
@@ -35,15 +36,9 @@ namespace InfrastructureCli.Tests.JsonElementExtensions
 
             // ACT
 
-            var actualOutput = input
-                .RewriteGetAttributeValues<dynamic>(new()
-                {
-                    ["Foo"] = "Bar"
-                })
-                .RewriteMaps()
-                .RewriteSpreads()
-                .RewriteGetPropertyValues()
-                .RewriteSerializes();
+            var rewriter = Rewriters.ChainRewriter.Base;
+            
+            var actualOutput = rewriter.Rewrite(input);
 
             var formattedExpectedOutput = JsonService.Serialize(expectedOutput);
             var formattedActualOutput = JsonService.Serialize(actualOutput);

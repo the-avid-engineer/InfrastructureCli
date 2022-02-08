@@ -1,0 +1,35 @@
+{
+  "@MapElements": [
+    [
+      {
+        "Type": "A"
+      },
+      {
+        "Type": "B"
+      }
+    ],
+    {
+      "@UsingAttributes": [
+        {
+          "@GetAttributeValue": "ElementValue"
+        },
+        {
+          "Type": {
+            "@GetAttributeValue": "Type"
+          },
+          "Description": {
+            "@GetPropertyValue": [
+              {
+                "A": "I Am Type A",
+                "B": "I Am Type B"
+              },
+              {
+                "@GetAttributeValue": "Type"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

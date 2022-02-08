@@ -6,9 +6,10 @@ using System.CommandLine.NamingConventionBinder;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using InfrastructureCli.Extensions;
 using InfrastructureCli.Models;
+using InfrastructureCli.Rewriters;
 using InfrastructureCli.Services;
+using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Commands
 {
@@ -37,14 +38,15 @@ namespace InfrastructureCli.Commands
                 return 1;
             }
 
+            var rewriter = new ChainRewriter
+            (
+                new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
+                ChainRewriter.Base
+            );
+            
             var template = await FileService.DeserializeFromFile<JsonElement>(arguments.TemplateFileName);
 
-            template = template
-                .RewriteGetAttributeValues(configuration.Attributes)
-                .RewriteMaps()
-                .RewriteSpreads()
-                .RewriteGetPropertyValues()
-                .RewriteSerializes();
+            template = rewriter.Rewrite(template);
 
             if (arguments.FinalTemplateFileName != null)
             {

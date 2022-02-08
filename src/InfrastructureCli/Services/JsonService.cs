@@ -22,26 +22,35 @@ namespace InfrastructureCli.Services
         {
             WriteIndented = false,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Converters =
+            {
+                new JsonStringEnumConverter(),
+            }
         };
 
-        public static async Task<T> DeserializeAsync<T>(Stream stream)
+        public static TOut Deserialize<TOut>(string json)
         {
-            return (await JsonSerializer.DeserializeAsync<T>(stream, Indented))!;
+            return JsonSerializer.Deserialize<TOut>(json, Indented)!;
         }
 
-        public static async Task SerializeAsync<T>(T t, Stream stream)
+        public static async Task<TOut> DeserializeAsync<TOut>(Stream stream)
         {
-            await JsonSerializer.SerializeAsync(stream, t, Indented);
+            return (await JsonSerializer.DeserializeAsync<TOut>(stream, Indented))!;
         }
 
-        public static string Serialize<T>(T t)
+        public static async Task SerializeAsync<TIn>(TIn @in, Stream stream)
         {
-            return JsonSerializer.Serialize(t, Flat);
+            await JsonSerializer.SerializeAsync(stream, @in, Indented);
         }
 
-        public static TOut Convert<TIn, TOut>(TIn tIn)
+        public static string Serialize<TIn>(TIn @in)
         {
-            var json = Serialize(tIn);
+            return JsonSerializer.Serialize(@in, Flat);
+        }
+
+        public static TOut Convert<TIn, TOut>(TIn @in)
+        {
+            var json = Serialize(@in);
             
             return JsonSerializer.Deserialize<TOut>(json, Flat)!;
         }

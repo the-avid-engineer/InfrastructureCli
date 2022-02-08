@@ -1,4 +1,11 @@
 {
+  "NESTED": {
+    "@Serialize": {
+      "Foo": {
+        "@Serialize": "Bar"
+      }
+    }
+  },
   "string": {
     "@Serialize": ""
   },

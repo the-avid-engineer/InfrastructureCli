@@ -1,4 +1,5 @@
 {
+  "NESTED": "{\"Foo\":\"\\\"Bar\\\"\"}",
   "string": "\"\"",
   "true": "true",
   "false": "false",

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
+using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Rewriters
 {
@@ -7,49 +8,54 @@ namespace InfrastructureCli.Rewriters
     {
         private readonly Dictionary<string, TAttributeValue> _attributes;
 
-        public GetAttributeValueRewriter(Utf8JsonWriter jsonWriter, Dictionary<string, TAttributeValue> attributes) : base(jsonWriter)
+        public GetAttributeValueRewriter(Dictionary<string, TAttributeValue> attributes)
         {
             _attributes = attributes;
         }
 
-        protected override void RewriteObject(JsonProperty[] jsonProperties)
+        public override JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            if (IsGetAttributeValue(jsonProperties) && RewriteGetAttributeValue(jsonProperties))
+            var templateJson = jsonElement.GetRawText();
+        
+            foreach (var (key, value) in _attributes)
             {
-                return;
+                templateJson = templateJson.Replace("@{" + key + "}", value?.ToString()?.Replace("\"", "\\\""));
             }
 
-            base.RewriteObject(jsonProperties);
+            var implicitRewritten = JsonService.Deserialize<JsonElement>(templateJson);
+            
+            return base.Rewrite(implicitRewritten, rootRewriter);
         }
-
-        private bool IsGetAttributeValue(JsonProperty[] jsonProperties)
+        
+        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
         {
-            return jsonProperties.Length == 1 &&
-                   jsonProperties[0].Name == "@GetAttributeValue" &&
-                   jsonProperties[0].Value.ValueKind == JsonValueKind.String;
-        }
+            if (jsonProperties.Count != 1 ||
+                jsonProperties.TryGetValue("@GetAttributeValue", out var attributeNameElement) != true ||
+                attributeNameElement.ValueKind != JsonValueKind.String)
+            {
+                return base.RewriteObject(jsonProperties, rootRewriter);
+            }
 
-        private bool RewriteGetAttributeValue(JsonProperty[] jsonProperties)
-        {
-            var attributeName = jsonProperties[0].Value.GetString()!;
+            var attributeName = attributeNameElement.GetString()!;
 
             if (_attributes.TryGetValue(attributeName, out var attributeValue) == false)
             {
-                return false;
+                return base.RewriteObject(jsonProperties, rootRewriter);
             }
 
-            if (object.Equals(attributeValue, default))
+            return Rewrite(jsonWriter =>
             {
-                JsonWriter.WriteNullValue();
-            }
-            else
-            {
-                var jsonElement = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(attributeValue));
+                if (object.Equals(attributeValue, default))
+                {
+                    jsonWriter.WriteNullValue();
+                }
+                else
+                {
+                    var attributeValueElement = JsonService.Convert<TAttributeValue, JsonElement>(attributeValue);
 
-                jsonElement.WriteTo(JsonWriter);
-            }
-
-            return true;
+                    attributeValueElement.WriteTo(jsonWriter);
+                }
+            });
         }
     }
 }

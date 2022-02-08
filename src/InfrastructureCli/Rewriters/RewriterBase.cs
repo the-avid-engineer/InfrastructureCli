@@ -1,64 +1,78 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 
 namespace InfrastructureCli.Rewriters
 {
-    public abstract class RewriterBase
+    internal abstract class RewriterBase : IRewriter
     {
-        protected readonly Utf8JsonWriter JsonWriter;
-
-        protected RewriterBase(Utf8JsonWriter jsonWriter)
+        public virtual JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            JsonWriter = jsonWriter;
+            return jsonElement.ValueKind switch
+            {
+                JsonValueKind.Object => RewriteObject(jsonElement, rootRewriter),
+                JsonValueKind.Array => RewriteArray(jsonElement, rootRewriter),
+                _ => jsonElement
+            };
         }
 
-        public void Rewrite(JsonElement jsonElement)
+        private JsonElement RewriteObject(JsonElement jsonObject, IRewriter rootRewriter)
         {
-            switch (jsonElement.ValueKind)
+            var newJsonProperties = new Dictionary<string, JsonElement>();
+            
+            foreach (var jsonProperty in jsonObject.EnumerateObject())
             {
-                case JsonValueKind.Array:
-                    RewriteArray(jsonElement.EnumerateArray().ToArray());
-                    break;
+                var newValue = Rewrite(jsonProperty.Value, rootRewriter);
 
-                case JsonValueKind.Object:
-                    RewriteObject(jsonElement.EnumerateObject().ToArray());
-                    break;
-
-                default:
-                    RewriteScalar(jsonElement);
-                    break;
-            }
-        }
-
-        protected virtual void RewriteArray(JsonElement[] jsonElements)
-        {
-            JsonWriter.WriteStartArray();
-
-            foreach (var childElement in jsonElements)
-            {
-                Rewrite(childElement);
+                newJsonProperties.Add(jsonProperty.Name, newValue);
             }
 
-            JsonWriter.WriteEndArray();
+            return RewriteObject(newJsonProperties, rootRewriter);
         }
 
-        protected virtual void RewriteObject(JsonProperty[] jsonProperties)
+        private JsonElement RewriteArray(JsonElement jsonArray, IRewriter rootRewriter)
         {
-            JsonWriter.WriteStartObject();
-
-            foreach (var jsonProperty in jsonProperties)
+            return Rewrite(jsonWriter =>
             {
-                JsonWriter.WritePropertyName(jsonProperty.Name);
+                jsonWriter.WriteStartArray();
 
-                Rewrite(jsonProperty.Value);
-            }
+                foreach (var jsonElement in jsonArray.EnumerateArray())
+                {
+                    Rewrite(jsonElement, rootRewriter).WriteTo(jsonWriter);
+                }
 
-            JsonWriter.WriteEndObject();
+                jsonWriter.WriteEndArray();
+            });
         }
 
-        protected virtual void RewriteScalar(JsonElement jsonElement)
+        protected JsonElement Rewrite(Action<Utf8JsonWriter> processor)
         {
-            jsonElement.WriteTo(JsonWriter);
+            using var memoryStream = new MemoryStream();
+            using var jsonWriter = new Utf8JsonWriter(memoryStream);
+            
+            processor.Invoke(jsonWriter);
+            
+            jsonWriter.Flush();
+
+            return JsonSerializer.Deserialize<JsonElement>(memoryStream.ToArray());
+        }
+
+        protected virtual JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
+        {
+            return Rewrite(jsonWriter =>
+            {
+                jsonWriter.WriteStartObject();
+
+                foreach (var (name, value) in jsonProperties)
+                {
+                    jsonWriter.WritePropertyName(name);
+
+                    value.WriteTo(jsonWriter);
+                }
+
+                jsonWriter.WriteEndObject();
+            });
         }
     }
 }

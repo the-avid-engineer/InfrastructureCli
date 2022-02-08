@@ -1,37 +1,28 @@
+using System.Collections.Generic;
 using System.Text.Json;
 using InfrastructureCli.Services;
+using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters
 {
     internal sealed class SerializeRewriter : RewriterBase
     {
-        public SerializeRewriter(Utf8JsonWriter jsonWriter) : base(jsonWriter)
+        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
         {
-        }
-
-        protected override void RewriteObject(JsonProperty[] jsonProperties)
-        {
-            if (IsSerialize(jsonProperties))
+            if (jsonProperties.Count != 1 ||
+                jsonProperties.TryGetValue("@Serialize", out var template) != true)
             {
-                RewriteSerialize(jsonProperties);
+                return base.RewriteObject(jsonProperties, rootRewriter);
             }
-            else
+            
+            template = rootRewriter.Rewrite(template);
+            
+            var serialized = JsonService.Serialize(template);
+
+            return Rewrite(jsonWriter =>
             {
-                base.RewriteObject(jsonProperties);
-            }
-        }
-
-        private bool IsSerialize(JsonProperty[] jsonProperties)
-        {
-            return jsonProperties.Length == 1 &&
-                   jsonProperties[0].Name == "@Serialize";
-        }
-
-        private void RewriteSerialize(JsonProperty[] jsonProperties)
-        {
-            var serialized = JsonService.Serialize(jsonProperties[0].Value);
-
-            JsonWriter.WriteStringValue(serialized);
+                jsonWriter.WriteStringValue(serialized);
+            });
         }
     }
 }

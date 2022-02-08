@@ -1,5 +1,5 @@
 {
-  "@Map": [
+  "@MapElements": [
     [
       "",
       0,
@@ -11,12 +11,12 @@
     ],
     {
       "Index": {
-        "@GetAttributeValue": "Index"
+        "@GetAttributeValue": "ElementIndex"
       },
       "Value": {
-        "@GetAttributeValue": "Value"
+        "@GetAttributeValue": "ElementValue"
       },
-      "IndexAndValue": "@{Index}:@{Value}"
+      "IndexAndValue": "@{ElementIndex}:@{ElementValue}"
     }
   ]
 }

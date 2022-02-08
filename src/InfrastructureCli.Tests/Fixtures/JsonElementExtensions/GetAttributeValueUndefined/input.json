@@ -1,5 +1,12 @@
 {
-  "Foo": {
-    "@GetAttributeValue": "UnknownFoo"
-  }
+  "@UsingAttributes": [
+    {
+      "Foo": "Bar"
+    },
+    {
+      "Foo": {
+        "@GetAttributeValue": "UnknownFoo"
+      }
+    }
+  ]
 }
