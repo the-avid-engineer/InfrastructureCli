@@ -1,8 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <!--Application-->
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
+        <LangVersion>9.0</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <!--Build-->
+    <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
+
+    <!--Package-->
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>

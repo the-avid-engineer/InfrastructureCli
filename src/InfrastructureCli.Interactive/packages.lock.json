@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETCoreApp,Version=v5.0": {
+      "AWSSDK.CloudFormation": {
+        "type": "Transitive",
+        "resolved": "3.7.7.16",
+        "contentHash": "XJPOaOV5PALhs0HFbE64DwLOnmp4XEhcwo8e0jfCHmAeB3F5wYp5lk8B7mbdwvOw3vz6vaYPNBeIFs0rmhbTyA==",
+        "dependencies": {
+          "AWSSDK.Core": "[3.7.6.2, 4.0.0)"
+        }
+      },
+      "AWSSDK.Core": {
+        "type": "Transitive",
+        "resolved": "3.7.6.2",
+        "contentHash": "oo7HAROGqVLDZY5UfNsq8R5kQNv2uainLe46f7tq5CscmAF6xXhZor7L+lSytvL2NZBVrBcoJZkljImFh1604w=="
+      },
+      "AWSSDK.SecurityToken": {
+        "type": "Transitive",
+        "resolved": "3.7.1.110",
+        "contentHash": "nKrLF3wTpnZ8oT4Lb7S2UtRIJQ4GNrJvlyY6kzn+LezESVygollOSIVOcQQQyh5tIVE+rqj38eOa6aEaheOdZQ==",
+        "dependencies": {
+          "AWSSDK.Core": "[3.7.6.2, 4.0.0)"
+        }
+      },
+      "System.CommandLine": {
+        "type": "Transitive",
+        "resolved": "2.0.0-beta2.21617.1",
+        "contentHash": "ZZqhoSu8ibW8zwAehKSQ1B3UMwZx6Dmt6oBbEMA8YD5EpyOm2ab7xQfzbN21Xi85KGJQkgeEf5wbsGHYE93cYQ==",
+        "dependencies": {
+          "system.memory": "4.5.4"
+        }
+      },
+      "System.CommandLine.NamingConventionBinder": {
+        "type": "Transitive",
+        "resolved": "2.0.0-beta2.21617.1",
+        "contentHash": "5cBvkPhW3W8h06539Z0aAxgjfVDim4RNk8ru2vySC5tQU35iYw2dHsJ7UsQemiQLAKbUaESC/9d3JoBk1pOV1A==",
+        "dependencies": {
+          "System.CommandLine": "2.0.0-beta2.21617.1"
+        }
+      },
+      "System.Memory": {
+        "type": "Transitive",
+        "resolved": "4.5.4",
+        "contentHash": "1MbJTHS1lZ4bS4FmsJjnuGJOu88ZzTT2rLvrhW7Ygic+pC0NWA+3hgAen0HRdsocuQXCkUTdFn9yHJJhsijDXw=="
+      },
+      "infrastructurecli": {
+        "type": "Project",
+        "dependencies": {
+          "AWSSDK.CloudFormation": "3.7.7.16",
+          "AWSSDK.SecurityToken": "3.7.1.110",
+          "System.CommandLine": "2.0.0-beta2.21617.1",
+          "System.CommandLine.NamingConventionBinder": "2.0.0-beta2.21617.1"
+        }
+      }
+    }
+  }
+}
