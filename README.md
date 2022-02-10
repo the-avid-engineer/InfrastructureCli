@@ -5,17 +5,16 @@ A framework for building infrastructure deployment CLI.
 
 The configurations file is a JSON file which indicates what kind of deployment it is for (e.g., AwsCloudFormation), and has multiple ways of configuring the infrastructure.
 
-```
+```json
 {
     "Type": "...",
     "Configurations": {
-        "....": {
+        "branch-a": {
             "Label": "....",
-            "Attributes": { ... },
-            "Tags": {},
-            "Meta": {}
+            "Attributes": {},
+            "Tags": {}
         },
-        ...
+        "...": {}
     }
 }
 ```
@@ -36,23 +35,23 @@ The configurations file is a JSON file which indicates what kind of deployment i
 
 The template file is a JSON file which codifies the infrastructure. The template file is passed through a rewriter which will re-write the structure, and allows you to do some basic programming in JSON format. Functions are listed in order of precedence.
 
-### @GetAttributeValue (Explicit)
+### @Fn::GetAttributeValue (Explicit)
 
-Attributes from the deployment configuration can be accessed with this rewriter. An object with a single key of `@GetAttributeValue` and a value of a string is recognized by this rewriter.
+Attributes from the deployment configuration can be accessed with this rewriter. An object with a single key of `@Fn::GetAttributeValue` and a value of a string is recognized by this rewriter.
 
 For example:
 
-```
+```json
 {
     "ParentKey": {
-        "@GetAttributeValue": "Foo"
+        "@Fn::GetAttributeValue": "Foo"
     }
 }
 ```
 
 Would be rewritten as:
 
-```
+```json
 {
     "ParentKey": "Bar"
 }
@@ -60,7 +59,7 @@ Would be rewritten as:
 
 Assuming that the configuration's attributes looks like this:
 
-```
+```json
 {
     "Attributes": {
         "Foo": "Bar"
@@ -70,13 +69,13 @@ Assuming that the configuration's attributes looks like this:
 
 Note, you are not restricted to using strings for attribute values. Any valid JSON is allowed.
 
-### @GetAttributeValue (Implicit)
+### @Fn::GetAttributeValue (Implicit)
 
-For any attribute, consider the key of the attribute. If any occurence of `@{<key>}` occurs in the template, it will be rewritten with the stringified value of the attribute.
+For any attribute, consider the key of the attribute. If any occurence of `@{<key>}` occurs in the template, it will be rewritten with the string value of the attribute. (Note that this token is not valid JSON outside of a string, so it may only be used inside a string; that includes property key strings!)
 
 For example:
 
-```
+```json
 {
     "ParentProperty": "@{Foo}",
     "@{Foo}": "ChildValue"
@@ -85,16 +84,74 @@ For example:
 
 Would be rewritten as:
 
-```
+```json
 {
     "ParentProperty": "Bar",
     "Bar": "ChildValue"
 }
 ```
 
-### @MapElements
+### @Fn::IncludeFile
 
-An object with a single key of `@MapElements` and a value of an array with two elements, the first being an array of anything and the second being anything, is recognized by this rewriter. Each element of the first element, the array, is mapped to the second element. In addition to any attributes already present, you may use the following attributes as well:
+If you want to split your template into components that are easier to digest/read, you may split them and recombine them using this function.
+
+File names are relative to the directory of the file in which the function is invoked. So if this is your file structure:
+```
+top.json
+child/child.json
+child/subchild/subchild.json
+```
+
+And if `top.json` needs to include `child/child.json`, it should use:
+
+```json
+{
+  "@Fn::IncludeFile": ["child", "child.json"]
+}
+```
+
+While if `child/child.json` needs to include `child/subchild/subchild.json`, it should use:
+
+```json
+{
+  "@Fn::IncludeFile": ["subchild", "subchild.json"]
+}
+```
+
+Because the `subchild` directory is at the same level as `child.json`.
+
+---
+
+For example:
+
+If you have a file `/component.json`:
+```json
+{
+  "Foo": "Bar"
+}
+```
+
+Then `/template.json`:
+```json
+{
+  "ParentProperty": {
+    "@Fn::IncludeFile": ["component.json"]
+  }
+}
+```
+Would be rewritten as:
+```json
+{
+  "ParentProperty": {
+    "Foo": "Bar"
+  }
+}
+```
+
+
+### @Fn::MapElements
+
+An object with a single key of `@Fn::MapElements` and a value of an array with two elements, the first being an array of anything and the second being anything, is recognized by this rewriter. Each element of the first element, the array, is mapped to the second element. In addition to any attributes already present, you may use the following attributes as well:
 
 | Attribute Key | Attribute Value Type | Description                            |
 |---------------|----------------------|----------------------------------------|
@@ -103,20 +160,20 @@ An object with a single key of `@MapElements` and a value of an array with two e
 
 For example:
 
-```
+```json
 {
     "ParentProperty": {
-        "@Map": [
+        "@Fn::Map": [
             ["a","b","c"],
             {
                 "@{ElementIndex}": {
-                    "@GetAttributeValue": "ElementValue"
+                    "@Fn::GetAttributeValue": "ElementValue"
                 },
                 "Index": {
-                    "@GetAttributeValue": "ElementIndex"
+                    "@Fn::GetAttributeValue": "ElementIndex"
                 },
                 "Value": {
-                    "@GetAttributeValue": "ElementValue"
+                    "@Fn::GetAttributeValue": "ElementValue"
                 },
                 "IndexAndValue": "@{ElementIndex}:@{ElementValue}"
             }
@@ -127,7 +184,7 @@ For example:
 
 Would be rewritten as:
 
-```
+```json
 {
     "ParentProperty": [
         {
@@ -152,9 +209,9 @@ Would be rewritten as:
 }
 ````
 
-### @MapProperties
+### @Fn::MapProperties
 
-An object with a single key of `@MapProperties` and a value of an array with two elements, the first being an inner object and the second being anything, is recognized by this rewriter. Each propert of the first element, the inner object, is mapped to the second element (The output of this rewriter is an array, not an object). In addition to any attributes already present, you may use the following attributes as well:
+An object with a single key of `@Fn::MapProperties` and a value of an array with two elements, the first being an inner object and the second being anything, is recognized by this rewriter. Each propert of the first element, the inner object, is mapped to the second element (The output of this rewriter is an array, not an object). In addition to any attributes already present, you may use the following attributes as well:
 
 | Attribute Key | Attribute Value Type | Description                             |
 |---------------|----------------------|-----------------------------------------|
@@ -163,10 +220,10 @@ An object with a single key of `@MapProperties` and a value of an array with two
 
 For example:
 
-```
+```json
 {
     "ParentProperty": {
-        "@Map": [
+        "@Fn::Map": [
             {
                 "a": "alpha",
                 "b": "beta",
@@ -174,13 +231,13 @@ For example:
             },
             {
                 "@{PropertyKey}": {
-                    "@GetAttributeValue": "PropertyValue"
+                    "@Fn::GetAttributeValue": "PropertyValue"
                 },
                 "Key": {
-                    "@GetAttributeValue": "PropertyKey"
+                    "@Fn::GetAttributeValue": "PropertyKey"
                 },
                 "Value": {
-                    "@GetAttributeValue": "PropertyValue"
+                    "@Fn::GetAttributeValue": "PropertyValue"
                 },
                 "KeyAndValue": "@{PropertyKey}:@{PropertyValue}"
             }
@@ -191,23 +248,23 @@ For example:
 
 Would be rewritten as:
 
-```
+```json
 {
     "ParentProperty": [
         {
-            "a": "alpha"
+            "a": "alpha",
             "Key": "a",
             "Value": "alpha",
             "KeyAndValue": "a:alpha"
         },
         {
-            "b": "beta"
+            "b": "beta",
             "Key": "b",
             "Value": "beta",
             "KeyAndValue": "b:beta"
         },
         {
-            "c": "candy"
+            "c": "candy",
             "Key": "c",
             "Value": "candy",
             "KeyAndValue": "c:candy"
@@ -216,21 +273,21 @@ Would be rewritten as:
 }
 ```
 
-### @UsingAttributes
+### @Fn::UsingAttributes
 
-An object with a single key of `@UsingAttributes` and a value of an array with two elements, the first being an object and the second being anything, is recognized by this rewriter. Each property of the first element of the array can be retrieved by using a corresponding `@GetAttributeValue` function in the second element of the array.
+An object with a single key of `@Fn::UsingAttributes` and a value of an array with two elements, the first being an object and the second being anything, is recognized by this rewriter. Each property of the first element of the array can be retrieved by using a corresponding `@Fn::GetAttributeValue` function in the second element of the array.
 
 For example:
 
-```
+```json
 {
-    "@UsingAttributes": [
+    "@Fn::UsingAttributes": [
         {
             "Foo": "Bar"
         },
         {
             "WhatIsFoo": {
-                "@GetAttributeValue": "Foo"
+                "@Fn::GetAttributeValue": "Foo"
             }
         }
     ]
@@ -239,23 +296,23 @@ For example:
 
 Would be rewritten as:
 
-```
+```json
 {
     "WhatIsFoo": "Bar"
 }
 ```
 
 
-### @GetPropertyValue
+### @Fn::GetPropertyValue
 
-An outer object with a single key of `@GetPropertyValue` and a value of an array with two elements, the first being an inner object and the second being a string, is recognized by this rewriter. The second element of the array, the string, is treated as a key of the first element of the array, the inner object, and the outer object is rewritten with the value of the inner object for that key.
+An outer object with a single key of `@Fn::GetPropertyValue` and a value of an array with two elements, the first being an inner object and the second being a string, is recognized by this rewriter. The second element of the array, the string, is treated as a key of the first element of the array, the inner object, and the outer object is rewritten with the value of the inner object for that key.
 
 For example:
 
-```
+```json
 {
     "ParentKey": {
-        "@GetPropertyValue":
+        "@Fn::GetPropertyValue":
         [
             {
                 "Foo": "Bar"
@@ -268,21 +325,21 @@ For example:
 
 Would be rewritten as:
 
-```
+```json
 {
     "ParentKey": "Bar"
 }
 ```
 
-### @SpreadElements
+### @Fn::SpreadElements
 
-An object with a single key of `@SpreadElements` and a value of an array of arrays is recognized by this rewritter. All of the arrays within the array will be combined into a single array.
+An object with a single key of `@Fn::SpreadElements` and a value of an array of arrays is recognized by this rewritter. All of the arrays within the array will be combined into a single array.
 
 For Example:
 
-```
+```json
 {
-  "@Spread": [
+  "@Fn::Spread": [
     [
       "a",
       "b",
@@ -299,7 +356,7 @@ For Example:
 
 Would be rewritten as:
 
-```
+```json
 [
   "a",
   "b",
@@ -310,15 +367,15 @@ Would be rewritten as:
 ]
 ```
 
-### @SpreadProperties
+### @Fn::SpreadProperties
 
-An object with a single key of `@SpreadProperties` and a value of an array of arrays is recognized by this rewritter. All of the objects within the array will be combined into a single object.
+An object with a single key of `@Fn::SpreadProperties` and a value of an array of arrays is recognized by this rewritter. All of the objects within the array will be combined into a single object.
 
 For example:
 
-```
+```json
 {
-  "@Spread": [
+  "@Fn::Spread": [
     {
       "a": "a",
       "b": "b",
@@ -335,7 +392,7 @@ For example:
 
 Would be rewritten as:
 
-```
+```json
 {
   "a": "a",
   "b": "b",
@@ -346,16 +403,16 @@ Would be rewritten as:
 }
 ```
 
-### @Serialize
+### @Fn::Serialize
 
-Sometimes you need JSON serialized inside JSON - AWS does this a lot with policies. However, writing serialized JSON inside JSON is.. ehm.. disgusting. So, this rewriter will serialize the JSON for you! An object with a key of `@Serialize` and any value is recognized by this rewritter.
+Sometimes you need JSON serialized inside JSON - AWS does this a lot with policies. However, writing serialized JSON inside JSON is.. ehm.. disgusting. So, this rewriter will serialize the JSON for you! An object with a key of `@Fn::Serialize` and any value is recognized by this rewritter.
 
 For example:
 
-```
+```json
 {
     "PolicyJson": {
-        "@Serialize": {
+        "@Fn::Serialize": {
             "Foo": "Bar"
         }
     }
@@ -364,26 +421,26 @@ For example:
 
 Would be rewritten as:
 
-```
+```json
 {
     "PolicyJson": "{\"Foo\":\"Bar\"}"
 }
 ```
 
-### @IntProduct
+### @Fn::IntProduct
 
-An object with a single key of `@IntProduct` and a value of an array of numbers is recognized by this rewriter. The output of this function is equivalent to the PI product notation in math, and will return `1` for an empty set (a.k.a., the empty product). This function is written to handle `int` numbers, and will likely throw if anything bigger is used. (It's always possible to add a `@LongProduct` in the future if bigger numbers are needed.)
+An object with a single key of `@Fn::IntProduct` and a value of an array of numbers is recognized by this rewriter. The output of this function is equivalent to the PI product notation in math, and will return `1` for an empty set (a.k.a., the empty product). This function is written to handle `int` numbers, and will likely throw if anything bigger is used. (It's always possible to add a `@Fn::LongProduct` in the future if bigger numbers are needed.)
 
 For example:
 
-```
+```json
 {
-    "@IntProduct": [1,2,3,4]
+    "@Fn::IntProduct": [1,2,3,4]
 }
 ```
 
 Will be rewritten as:
 
-```
+```json
 24
 ```
