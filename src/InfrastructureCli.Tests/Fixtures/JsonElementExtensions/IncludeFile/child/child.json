@@ -1,0 +1,3 @@
+{
+  "@Fn::IncludeFile": ["subchild", "subchild.json"]
+}

@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using InfrastructureCli.Extensions;
+using InfrastructureCli.Rewriters;
 using InfrastructureCli.Services;
 using Shouldly;
 using Xunit;
@@ -13,10 +14,11 @@ namespace InfrastructureCli.Tests.JsonElementExtensions
         [Theory]
         [InlineData("GetAttributeValueDefined")]
         [InlineData("GetAttributeValueUndefined")]
-        [InlineData("GetPropertyValueDefined")]
-        [InlineData("GetPropertyValueUndefined")]
+        [InlineData("IncludeFile")]
         [InlineData("MapElements")]
         [InlineData("MapProperties")]
+        [InlineData("GetPropertyValueDefined")]
+        [InlineData("GetPropertyValueUndefined")]
         [InlineData("SpreadElements")]
         [InlineData("SpreadProperties")]
         [InlineData("Serialize")]
@@ -26,8 +28,10 @@ namespace InfrastructureCli.Tests.JsonElementExtensions
         {
             // ARRANGE
 
-            var inputFileName = Path.Combine("Fixtures", "JsonElementExtensions", fixtureName, "input.json");
-            var expectedOutputFileName = Path.Combine("Fixtures", "JsonElementExtensions", fixtureName, "expectedOutput.json");
+            var currentPath = Path.Combine("Fixtures", "JsonElementExtensions", fixtureName);
+            
+            var inputFileName = Path.Combine(currentPath, "input.json");
+            var expectedOutputFileName = Path.Combine(currentPath, "expectedOutput.json");
 
             await using var inputFile = File.OpenRead(inputFileName);
             await using var expectedOutputFile = File.OpenRead(expectedOutputFileName);
@@ -37,7 +41,11 @@ namespace InfrastructureCli.Tests.JsonElementExtensions
 
             // ACT
 
-            var rewriter = Rewriters.ChainRewriter.Base;
+            var rewriter = new ChainRewriter(new[]
+            {
+                new IncludeFileRewriter(currentPath),
+                ChainRewriter.Base
+            });
             
             var actualOutput = rewriter.Rewrite(input);
 
