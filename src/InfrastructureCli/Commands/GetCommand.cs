@@ -29,11 +29,11 @@ namespace InfrastructureCli.Commands
             {
                 return 1;
             }
-            
+
             var getOptions = new GetOptions
             (
                 Configuration: configuration,
-                PropertyName: arguments.PropertyName
+                PropertyName: configuration.PropertyMaps.GetValueOrDefault(arguments.PropertyName, arguments.PropertyName)
             );
             
             var propertyValue = configurationsFile.TemplateType switch
@@ -50,13 +50,6 @@ namespace InfrastructureCli.Commands
             arguments.Console.Out.Write(propertyValue);
 
             return 0;
-        }
-
-        private static async Task<Configuration?> GetConfiguration(Arguments arguments)
-        {
-            var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(arguments.ConfigurationsFileName);
-
-            return configurationsFile.Configurations.GetValueOrDefault(arguments.ConfigurationKey);
         }
 
         private static void AttachPropertyNameArgument(Command parentCommand)

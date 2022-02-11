@@ -7,6 +7,7 @@ namespace InfrastructureCli.Models
     (
         string Label,
         Dictionary<string, JsonElement> Attributes,
-        Dictionary<string, string> Tags
+        Dictionary<string, string> Tags,
+        Dictionary<string, string> PropertyMaps
     );
 }
