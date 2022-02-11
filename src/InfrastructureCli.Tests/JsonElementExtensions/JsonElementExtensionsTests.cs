@@ -41,11 +41,11 @@ namespace InfrastructureCli.Tests.JsonElementExtensions
 
             // ACT
 
-            var rewriter = new ChainRewriter(new[]
-            {
-                new IncludeFileRewriter(currentPath),
-                ChainRewriter.Base
-            });
+            var rewriter = new ChainRewriter
+            (
+                ChainRewriter.Base,
+                new IncludeFileRewriter(currentPath)
+            );
             
             var actualOutput = rewriter.Rewrite(input);
 

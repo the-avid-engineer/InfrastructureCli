@@ -1,37 +1,39 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text.Json;
+using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal sealed class SpreadPropertiesRewriter : RewriterBase
+    internal sealed class SpreadPropertiesRewriter : RewriterBase, IRewriter
     {
-        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
+        public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            if (TryGetArgumentsElement(jsonProperties, "SpreadProperties", out var spreadPropertiesArgumentsElement) != true ||
-                spreadPropertiesArgumentsElement.ValueKind != JsonValueKind.Array)
+            if (TryGetArguments(jsonElement, "SpreadProperties", out var argumentsElement) != true ||
+                argumentsElement.ValueKind != JsonValueKind.Array)
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
 
-            var allParentElements = spreadPropertiesArgumentsElement.EnumerateArray();
-
-            if (allParentElements.Any(parentElement => parentElement.ValueKind != JsonValueKind.Object))
-            {
-                return base.RewriteObject(jsonProperties, rootRewriter);
-            }
-            
-            var allJsonProperties = allParentElements
-                .SelectMany(jsonElement => jsonElement.EnumerateObject())
+            var childJsonElements = argumentsElement
+                .EnumerateArray()
                 .ToArray();
 
-            return Rewrite(jsonWriter =>
+            if (childJsonElements.Any(childJsonElement => IsNormalObject(childJsonElement) != true))
+            {
+                return jsonElement;
+            }
+            
+            var allChildJsonProperties = childJsonElements
+                .SelectMany(childJsonElement => childJsonElement.EnumerateObject())
+                .ToArray();
+
+            return BuildJsonElement(jsonWriter =>
             {
                 jsonWriter.WriteStartObject();
 
-                foreach (var jsonProperty in allJsonProperties)
+                foreach (var childJsonProperty in allChildJsonProperties)
                 {
-                    jsonProperty.WriteTo(jsonWriter);
+                    childJsonProperty.WriteTo(jsonWriter);
                 }
 
                 jsonWriter.WriteEndObject();

@@ -5,46 +5,43 @@ using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal sealed class MapElementsRewriter : RewriterBase
+    internal sealed class MapElementsRewriter : RewriterBase, IRewriter
     {
-        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
+        public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            if (TryGetArgumentsElement(jsonProperties, "MapElements", out var mapElementsArgumentsElement) != true ||
-                mapElementsArgumentsElement.ValueKind != JsonValueKind.Array ||
-                mapElementsArgumentsElement.GetArrayLength() != 2 ||
-                mapElementsArgumentsElement[0].ValueKind != JsonValueKind.Array)
+            if (TryGetArguments(jsonElement, "MapElements", out var argumentsElement) != true ||
+                argumentsElement.ValueKind != JsonValueKind.Array ||
+                argumentsElement.GetArrayLength() != 2 ||
+                argumentsElement[0].ValueKind != JsonValueKind.Array)
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
-            
-            var template = mapElementsArgumentsElement[1];
-            
-            var jsonElements = mapElementsArgumentsElement[0]
+
+            var childJsonElements = argumentsElement[0]
                 .EnumerateArray()
-                .Select((value, index) =>
+                .ToArray();
+            
+            var templateJsonElements = argumentsElement[1];
+            
+            return BuildJsonElement(jsonWriter =>
+            {
+                jsonWriter.WriteStartArray();
+
+                for (var i = 0; i < childJsonElements.Length; i++)
                 {
                     var attributes = new Dictionary<string, dynamic>
                     {
-                        ["ElementIndex"] = index,
-                        ["ElementValue"] = value,
+                        ["ElementIndex"] = i,
+                        ["ElementValue"] = childJsonElements[i],
                     };
 
-                    var augmentedRootRewriter = new ChainRewriter
+                    var augmentedRewriter = new ChainRewriter
                     (
                         new GetAttributeValueRewriter<dynamic>(attributes),
                         rootRewriter
                     );
 
-                    return augmentedRootRewriter.Rewrite(template);
-                });
-            
-            return Rewrite(jsonWriter =>
-            {
-                jsonWriter.WriteStartArray();
-
-                foreach (var jsonElement in jsonElements)
-                {
-                    jsonElement.WriteTo(jsonWriter);
+                    augmentedRewriter.Rewrite(templateJsonElements).WriteTo(jsonWriter);
                 }
 
                 jsonWriter.WriteEndArray();

@@ -33,7 +33,7 @@ The configurations file is a JSON file which indicates what kind of deployment i
 
 ## Template File
 
-The template file is a JSON file which codifies the infrastructure. The template file is passed through a rewriter which will re-write the structure, and allows you to do some basic programming in JSON format. Functions are listed in order of precedence.
+The template file is a JSON file which codifies the infrastructure. The template file is passed through a rewriter which will re-write the structure, and allows you to do some basic programming in JSON format. Functions are listed in order of precedence, and the template is processed bottom-up.
 
 ### @Fn::GetAttributeValue (Explicit)
 
@@ -91,63 +91,7 @@ Would be rewritten as:
 }
 ```
 
-### @Fn::IncludeFile
-
-If you want to split your template into components that are easier to digest/read, you may split them and recombine them using this function.
-
-File names are relative to the directory of the file in which the function is invoked. So if this is your file structure:
-```
-top.json
-child/child.json
-child/subchild/subchild.json
-```
-
-And if `top.json` needs to include `child/child.json`, it should use:
-
-```json
-{
-  "@Fn::IncludeFile": ["child", "child.json"]
-}
-```
-
-While if `child/child.json` needs to include `child/subchild/subchild.json`, it should use:
-
-```json
-{
-  "@Fn::IncludeFile": ["subchild", "subchild.json"]
-}
-```
-
-Because the `subchild` directory is at the same level as `child.json`.
-
----
-
-For example:
-
-If you have a file `/component.json`:
-```json
-{
-  "Foo": "Bar"
-}
-```
-
-Then `/template.json`:
-```json
-{
-  "ParentProperty": {
-    "@Fn::IncludeFile": ["component.json"]
-  }
-}
-```
-Would be rewritten as:
-```json
-{
-  "ParentProperty": {
-    "Foo": "Bar"
-  }
-}
-```
-
+WARNING: Due to the template being processed bottom-up, you should not rely on the output of this function (the implicit version) as an argument in another function call (e.g., `@Fn::IncludeFile`) because that dependent function _might_ evaluate before the attribute value is available. In these cases, it is advised to use the explicit function. 
 
 ### @Fn::MapElements
 
@@ -443,4 +387,62 @@ Will be rewritten as:
 
 ```json
 24
+```
+
+
+### @Fn::IncludeFile
+
+If you want to split your template into components that are easier to digest/read, you may split them and recombine them using this function.
+
+File names are relative to the directory of the file in which the function is invoked. So if this is your file structure:
+```
+top.json
+child/child.json
+child/subchild/subchild.json
+```
+
+And if `top.json` needs to include `child/child.json`, it should use:
+
+```json
+{
+  "@Fn::IncludeFile": ["child", "child.json"]
+}
+```
+
+While if `child/child.json` needs to include `child/subchild/subchild.json`, it should use:
+
+```json
+{
+  "@Fn::IncludeFile": ["subchild", "subchild.json"]
+}
+```
+
+Because the `subchild` directory is at the same level as `child.json`.
+
+---
+
+For example:
+
+If you have a file `/component.json`:
+```json
+{
+  "Foo": "Bar"
+}
+```
+
+Then `/template.json`:
+```json
+{
+  "ParentProperty": {
+    "@Fn::IncludeFile": ["component.json"]
+  }
+}
+```
+Would be rewritten as:
+```json
+{
+  "ParentProperty": {
+    "Foo": "Bar"
+  }
+}
 ```

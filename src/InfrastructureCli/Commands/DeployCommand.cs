@@ -41,8 +41,8 @@ namespace InfrastructureCli.Commands
             var rewriter = new ChainRewriter
             (
                 new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
-                new IncludeFileRewriter(arguments.TemplateFileName.DirectoryName!),
-                ChainRewriter.Base
+                ChainRewriter.Base,
+                new IncludeFileRewriter(arguments.TemplateFileName.DirectoryName!)
             );
             
             var template = await FileService.DeserializeFromFile<JsonElement>(arguments.TemplateFileName);

@@ -1,3 +1,10 @@
 {
-  "@Fn::IncludeFile": ["child", "child.json"]
+  "@Fn::SpreadProperties": [
+    {
+      "@Fn::IncludeFile": ["child", "child.json"]
+    },
+    {
+      "@Fn::IncludeFile": ["child", "empty-child.json"]
+    }
+  ]
 }

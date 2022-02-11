@@ -2,10 +2,9 @@
   "Foo": {
     "@Fn::GetPropertyValue": [
       {
-        "Key1": "Bar",
-        "Key2": "Baz"
+        "KnownKey": "Bar"
       },
-      "Key3"
+      "UnknownKey"
     ]
   }
 }

@@ -1,24 +1,20 @@
-using System.Collections.Generic;
 using System.Text.Json;
 using InfrastructureCli.Services;
-using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal sealed class SerializeRewriter : RewriterBase
+    internal sealed class SerializeRewriter : RewriterBase, IRewriter
     {
-        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
+        public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            if (TryGetArgumentsElement(jsonProperties, "Serialize", out var serializeArgumentsElement) != true)
+            if (TryGetArguments(jsonElement, "Serialize", out var argumentsElement) != true)
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
-            
-            serializeArgumentsElement = rootRewriter.Rewrite(serializeArgumentsElement);
-            
-            var serialized = JsonService.Serialize(serializeArgumentsElement);
 
-            return Rewrite(jsonWriter =>
+            var serialized = JsonService.Serialize(argumentsElement);
+            
+            return BuildJsonElement(jsonWriter =>
             {
                 jsonWriter.WriteStringValue(serialized);
             });

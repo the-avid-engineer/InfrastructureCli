@@ -4,7 +4,7 @@ using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal sealed class GetAttributeValueRewriter<TAttributeValue> : RewriterBase
+    internal sealed class GetAttributeValueRewriter<TAttributeValue> : RewriterBase, IRewriter
     {
         private readonly Dictionary<string, TAttributeValue> _attributes;
 
@@ -13,7 +13,12 @@ namespace InfrastructureCli.Rewriters
             _attributes = attributes;
         }
 
-        public override JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+        public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+        {
+            return RewriteExplicit(RewriteImplicit(jsonElement));
+        }
+
+        private JsonElement RewriteImplicit(JsonElement jsonElement)
         {
             var templateJson = jsonElement.GetRawText();
         
@@ -22,27 +27,25 @@ namespace InfrastructureCli.Rewriters
                 templateJson = templateJson.Replace($"@{{{key}}}", value?.ToString()?.Replace("\"", "\\\""));
             }
 
-            var implicitRewritten = JsonService.Deserialize<JsonElement>(templateJson);
-            
-            return base.Rewrite(implicitRewritten, rootRewriter);
+            return JsonService.Deserialize<JsonElement>(templateJson);
         }
         
-        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
+        private JsonElement RewriteExplicit(JsonElement jsonElement)
         {
-            if (TryGetArgumentsElement(jsonProperties, "GetAttributeValue", out var getAttributeValueArgumentsElement) != true ||
-                getAttributeValueArgumentsElement.ValueKind != JsonValueKind.String)
+            if (TryGetArguments(jsonElement, "GetAttributeValue", out var argumentsElement) != true ||
+                argumentsElement.ValueKind != JsonValueKind.String)
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
 
-            var attributeName = getAttributeValueArgumentsElement.GetString()!;
+            var attributeName = argumentsElement.GetString()!;
 
             if (_attributes.TryGetValue(attributeName, out var attributeValue) == false)
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
 
-            return Rewrite(jsonWriter =>
+            return BuildJsonElement(jsonWriter =>
             {
                 if (object.Equals(attributeValue, default))
                 {

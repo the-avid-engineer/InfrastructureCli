@@ -6,62 +6,55 @@ using System.Text.Json;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal abstract class RewriterBase : IRewriter
+    internal abstract class RewriterBase
     {
-        protected bool IsFunctionObject(IReadOnlyDictionary<string, JsonElement> jsonProperties)
+        // protected static bool IsNormalString(JsonElement jsonElement)
+        // {
+        //     //@{}
+        // }
+        
+        protected static bool IsNormalObject(JsonElement jsonElement)
         {
-            return jsonProperties.Count == 1 &&
-                   jsonProperties.Single().Key.StartsWith("@Fn::");
+            return TryGetProperties(jsonElement, out _);
         }
         
-        protected bool TryGetArgumentsElement(IReadOnlyDictionary<string, JsonElement> jsonProperties, string functionName, out JsonElement argumentsElement)
+        protected static bool TryGetProperties(JsonElement jsonElement, out JsonProperty[] jsonProperties)
+        {
+            jsonProperties = default!;
+            
+            if (jsonElement.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+            
+            jsonProperties = jsonElement
+                .EnumerateObject()
+                .ToArray();
+
+            return jsonProperties.Length != 1 || !jsonProperties[0].Name.StartsWith("@Fn::");
+        }
+        
+        protected static bool TryGetArguments(JsonElement jsonElement, string functionName, out JsonElement argumentsElement)
         {
             argumentsElement = default!;
-            
-            return jsonProperties.Count == 1 &&
-                   jsonProperties.TryGetValue($"@Fn::{functionName}", out argumentsElement);
-        }
-        
-        public virtual JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
-        {
-            return jsonElement.ValueKind switch
-            {
-                JsonValueKind.Object => RewriteObject(jsonElement, rootRewriter),
-                JsonValueKind.Array => RewriteArray(jsonElement, rootRewriter),
-                _ => jsonElement
-            };
-        }
 
-        private JsonElement RewriteObject(JsonElement jsonObject, IRewriter rootRewriter)
-        {
-            var newJsonProperties = new Dictionary<string, JsonElement>();
-            
-            foreach (var jsonProperty in jsonObject.EnumerateObject())
+            if (jsonElement.ValueKind != JsonValueKind.Object)
             {
-                var newValue = Rewrite(jsonProperty.Value, rootRewriter);
-
-                newJsonProperties.Add(jsonProperty.Name, newValue);
+                return false;
             }
 
-            return RewriteObject(newJsonProperties, rootRewriter);
-        }
+            var jsonProperties = jsonElement.EnumerateObject().ToArray();
 
-        private JsonElement RewriteArray(JsonElement jsonArray, IRewriter rootRewriter)
-        {
-            return Rewrite(jsonWriter =>
+            if (jsonProperties.Length != 1 || jsonProperties[0].Name != $"@Fn::{functionName}")
             {
-                jsonWriter.WriteStartArray();
+                return false;
+            }
 
-                foreach (var jsonElement in jsonArray.EnumerateArray())
-                {
-                    Rewrite(jsonElement, rootRewriter).WriteTo(jsonWriter);
-                }
-
-                jsonWriter.WriteEndArray();
-            });
+            argumentsElement = jsonProperties[0].Value;
+            return true;
         }
-
-        protected JsonElement Rewrite(Action<Utf8JsonWriter> processor)
+        
+        protected static JsonElement BuildJsonElement(Action<Utf8JsonWriter> processor)
         {
             using var memoryStream = new MemoryStream();
             using var jsonWriter = new Utf8JsonWriter(memoryStream);
@@ -71,23 +64,6 @@ namespace InfrastructureCli.Rewriters
             jsonWriter.Flush();
 
             return JsonSerializer.Deserialize<JsonElement>(memoryStream.ToArray());
-        }
-
-        protected virtual JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
-        {
-            return Rewrite(jsonWriter =>
-            {
-                jsonWriter.WriteStartObject();
-
-                foreach (var (name, value) in jsonProperties)
-                {
-                    jsonWriter.WritePropertyName(name);
-
-                    value.WriteTo(jsonWriter);
-                }
-
-                jsonWriter.WriteEndObject();
-            });
         }
     }
 }

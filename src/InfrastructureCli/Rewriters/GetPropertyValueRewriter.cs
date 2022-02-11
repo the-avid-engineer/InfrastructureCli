@@ -1,37 +1,35 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal sealed class GetPropertyValueRewriter : RewriterBase
+    internal sealed class GetPropertyValueRewriter : RewriterBase, IRewriter
     {
-        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
+        public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            if (TryGetArgumentsElement(jsonProperties, "GetPropertyValue", out var getPropertyValueArgumentsElement) != true ||
-                getPropertyValueArgumentsElement.ValueKind != JsonValueKind.Array ||
-                getPropertyValueArgumentsElement.GetArrayLength() != 2 ||
-                getPropertyValueArgumentsElement[0].ValueKind != JsonValueKind.Object ||
-                getPropertyValueArgumentsElement[1].ValueKind != JsonValueKind.String)
+            if (TryGetArguments(jsonElement, "GetPropertyValue", out var argumentsElement) != true ||
+                argumentsElement.ValueKind != JsonValueKind.Array ||
+                argumentsElement.GetArrayLength() != 2 ||
+                TryGetProperties(argumentsElement[0], out var childJsonProperties) != true ||
+                argumentsElement[1].ValueKind != JsonValueKind.String)
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
             
-            var properties = getPropertyValueArgumentsElement[0]
-                .EnumerateObject()
+            var properties = childJsonProperties
                 .ToDictionary(property => property.Name, property => property.Value);
 
-            if (IsFunctionObject(properties))
-            {
-                return base.RewriteObject(jsonProperties, rootRewriter);
-            }
-            
-            var propertyName = getPropertyValueArgumentsElement[1].GetString()!;
-            
+            var propertyName = argumentsElement[1].GetString()!;
+
             return properties.TryGetValue(propertyName, out var propertyValueElement)
                 ? propertyValueElement
-                : base.RewriteObject(jsonProperties, rootRewriter);
+                : BuildJsonElement(jsonWriter =>
+                {
+                    jsonWriter.WriteStartObject();
+                    jsonWriter.WritePropertyName("@Fn::Error");
+                    jsonWriter.WriteStringValue($"Unknown Property Key: {propertyName}");
+                    jsonWriter.WriteEndObject();
+                });
         }
     }
 }

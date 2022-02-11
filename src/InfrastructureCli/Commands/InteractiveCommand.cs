@@ -29,7 +29,7 @@ namespace InfrastructureCli.Commands
 
                         if (input != "repeat")
                         {
-                            lastArgs = input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            lastArgs = input.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                         }
 
                         try

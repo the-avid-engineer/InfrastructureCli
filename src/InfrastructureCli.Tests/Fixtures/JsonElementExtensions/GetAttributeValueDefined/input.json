@@ -1,11 +1,11 @@
 {
   "@Fn::UsingAttributes": [
     {
-      "Foo": "Bar"
+      "KnownAttribute": "Bar"
     },
     {
       "Foo": {
-        "@Fn::GetAttributeValue": "Foo"
+        "@Fn::GetAttributeValue": "KnownAttribute"
       }
     }
   ]

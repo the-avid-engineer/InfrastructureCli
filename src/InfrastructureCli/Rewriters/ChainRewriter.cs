@@ -1,8 +1,9 @@
+using System.Linq;
 using System.Text.Json;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal sealed class ChainRewriter : IRewriter
+    internal sealed class ChainRewriter : RewriterBase, IRewriter
     {
         public static readonly IRewriter Base = new ChainRewriter
         (
@@ -25,12 +26,47 @@ namespace InfrastructureCli.Rewriters
 
         public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            foreach (var rewriter in _rewriters)
+            jsonElement = jsonElement.ValueKind switch
             {
-                jsonElement = rewriter.Rewrite(jsonElement, rootRewriter);
-            }
-            
-            return jsonElement;
+                JsonValueKind.Object => RewriteObject(jsonElement),
+                JsonValueKind.Array => RewriteArray(jsonElement),
+                _ => jsonElement
+            };
+
+            return _rewriters
+                .Aggregate(jsonElement, (currentJsonElement, rewriter) => rewriter.Rewrite(currentJsonElement, rootRewriter));
+        }
+        
+        private JsonElement RewriteObject(JsonElement jsonObject)
+        {
+            return BuildJsonElement(jsonWriter =>
+            {
+                jsonWriter.WriteStartObject();
+
+                foreach (var jsonProperty in jsonObject.EnumerateObject())
+                {
+                    jsonWriter.WritePropertyName(jsonProperty.Name);
+                    
+                    Rewrite(jsonProperty.Value, this).WriteTo(jsonWriter);
+                }
+
+                jsonWriter.WriteEndObject();
+            });
+        }
+        
+        private JsonElement RewriteArray(JsonElement jsonArray)
+        {
+            return BuildJsonElement(jsonWriter =>
+            {
+                jsonWriter.WriteStartArray();
+
+                foreach (var jsonElement in jsonArray.EnumerateArray())
+                {
+                    Rewrite(jsonElement, this).WriteTo(jsonWriter);
+                }
+
+                jsonWriter.WriteEndArray();
+            });
         }
     }
 }

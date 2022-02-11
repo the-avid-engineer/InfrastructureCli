@@ -5,36 +5,30 @@ using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal class UsingAttributesRewriter : RewriterBase
+    internal class UsingAttributesRewriter : RewriterBase, IRewriter
     {
-        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
+        public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            if (TryGetArgumentsElement(jsonProperties, "UsingAttributes", out var usingAttributesArgumentsElement) != true ||
-                usingAttributesArgumentsElement.ValueKind != JsonValueKind.Array ||
-                usingAttributesArgumentsElement.GetArrayLength() != 2 ||
-                usingAttributesArgumentsElement[0].ValueKind != JsonValueKind.Object)
+            if (TryGetArguments(jsonElement, "UsingAttributes", out var argumentsElement) != true ||
+                argumentsElement.ValueKind != JsonValueKind.Array ||
+                argumentsElement.GetArrayLength() != 2 ||
+                TryGetProperties(argumentsElement[0], out var childJsonProperties) != true)
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
-
-            var template = usingAttributesArgumentsElement[1];
             
-            var attributes = usingAttributesArgumentsElement[0]
-                .EnumerateObject()
+            var attributes = childJsonProperties
                 .ToDictionary(property => property.Name, property => property.Value);
-
-            if (IsFunctionObject(attributes))
-            {
-                return base.RewriteObject(jsonProperties, rootRewriter);
-            }
             
-            var augmentedRootRewriter = new ChainRewriter
+            var templateJsonElement = argumentsElement[1];
+            
+            var augmentedRewriter = new ChainRewriter
             (
                 new GetAttributeValueRewriter<JsonElement>(attributes),
                 rootRewriter
             );
             
-            return augmentedRootRewriter.Rewrite(template);
+            return augmentedRewriter.Rewrite(templateJsonElement);
         }
     }
 }

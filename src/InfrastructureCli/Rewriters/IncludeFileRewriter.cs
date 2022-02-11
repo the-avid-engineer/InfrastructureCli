@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -7,7 +6,7 @@ using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal sealed class IncludeFileRewriter : RewriterBase
+    internal sealed class IncludeFileRewriter : RewriterBase, IRewriter
     {
         private readonly string _currentPath;
 
@@ -16,25 +15,25 @@ namespace InfrastructureCli.Rewriters
             _currentPath = currentPath;
         }
         
-        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
+        public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            if (TryGetArgumentsElement(jsonProperties, "IncludeFile", out var argumentsElement) != true ||
+            if (TryGetArguments(jsonElement, "IncludeFile", out var argumentsElement) != true ||
                 argumentsElement.ValueKind != JsonValueKind.Array)
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
 
-            var jsonElements = argumentsElement
+            var childJsonElements = argumentsElement
                 .EnumerateArray()
                 .ToArray();
 
-            if (jsonElements.Any(jsonElement => jsonElement.ValueKind != JsonValueKind.String))
+            if (childJsonElements.Any(childJsonElement => childJsonElement.ValueKind != JsonValueKind.String))
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
 
-            var fileNameComponents = jsonElements
-                .Select(jsonElement => jsonElement.GetString()!)
+            var fileNameComponents = childJsonElements
+                .Select(childJsonElement => childJsonElement.GetString()!)
                 .Prepend(_currentPath)
                 .ToArray();
 
@@ -42,15 +41,15 @@ namespace InfrastructureCli.Rewriters
             
             var fileInfo = new FileInfo(fileName);
 
-            var jsonElement = FileService.DeserializeFromFile<JsonElement>(fileInfo).Result;
+            var newJsonElement = FileService.DeserializeFromFile<JsonElement>(fileInfo).Result;
 
-            var augmentedRewriter = new ChainRewriter(new[]
-            {
+            var augmentedRewriter = new ChainRewriter
+            (
                 new IncludeFileRewriter(fileInfo.DirectoryName!),
                 rootRewriter
-            });
+            );
 
-            return augmentedRewriter.Rewrite(jsonElement);
+            return augmentedRewriter.Rewrite(newJsonElement);
         }
     }
 }

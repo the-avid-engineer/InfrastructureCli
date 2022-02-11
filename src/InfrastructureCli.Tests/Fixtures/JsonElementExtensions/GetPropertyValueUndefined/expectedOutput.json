@@ -1,11 +1,5 @@
 {
   "Foo": {
-    "@Fn::GetPropertyValue": [
-      {
-        "Key1": "Bar",
-        "Key2": "Baz"
-      },
-      "Key3"
-    ]
+    "@Fn::Error": "Unknown Property Key: UnknownKey"
   }
 }

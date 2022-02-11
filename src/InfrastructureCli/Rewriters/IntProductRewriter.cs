@@ -1,31 +1,32 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
 namespace InfrastructureCli.Rewriters
 {
-    internal sealed class IntProductionRewriter : RewriterBase
+    internal sealed class IntProductionRewriter : RewriterBase, IRewriter
     {
-        protected override JsonElement RewriteObject(IReadOnlyDictionary<string, JsonElement> jsonProperties, IRewriter rootRewriter)
+        public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
         {
-            if (TryGetArgumentsElement(jsonProperties, "IntProduct", out var getIntProductArgumentsElement) != true ||
-                getIntProductArgumentsElement.ValueKind != JsonValueKind.Array)
+            if (TryGetArguments(jsonElement, "IntProduct", out var argumentsElement) != true ||
+                argumentsElement.ValueKind != JsonValueKind.Array)
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
 
-            var allElements = getIntProductArgumentsElement.EnumerateArray().ToArray();
+            var childJsonElements = argumentsElement
+                .EnumerateArray()
+                .ToArray();
 
-            if (allElements.Any(element => element.ValueKind != JsonValueKind.Number))
+            if (childJsonElements.Any(childJsonElement => childJsonElement.ValueKind != JsonValueKind.Number))
             {
-                return base.RewriteObject(jsonProperties, rootRewriter);
+                return jsonElement;
             }
 
-            var product = allElements
+            var product = childJsonElements
                 .Select(element => element.GetInt32())
                 .Aggregate(1, (x, y) => x * y);
             
-            return Rewrite(jsonWriter =>
+            return BuildJsonElement(jsonWriter =>
             {
                 jsonWriter.WriteNumberValue(product);
             });
