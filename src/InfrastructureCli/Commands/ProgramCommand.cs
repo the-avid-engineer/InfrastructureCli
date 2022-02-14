@@ -14,8 +14,9 @@ namespace InfrastructureCli.Commands
 
             InteractiveCommand.Attach(rootCommand);
             NewCommand.Attach(rootCommand, generateCommands);
-            GetCommand.Attach(rootCommand);
+            CanDeployCommand.Attach(rootCommand);
             DeployCommand.Attach(rootCommand);
+            GetCommand.Attach(rootCommand);
 
             _rootCommand = rootCommand;
         }
