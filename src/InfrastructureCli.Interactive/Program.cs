@@ -8,7 +8,7 @@ namespace InfrastructureCli.Interactive
     {
         public static Task<int> Main(string[] args)
         {
-            return new ProgramCommand(Array.Empty<IGenerateCommand>()).Invoke(args);
+            return new ProgramCommand(Array.Empty<IGenerateCommand>()).Invoke(new[]{"interactive"});
         }
     }
 }
