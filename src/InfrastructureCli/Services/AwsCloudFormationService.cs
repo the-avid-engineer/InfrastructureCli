@@ -169,17 +169,12 @@ namespace InfrastructureCli.Services
                 {
                     StackName = GetStackName(options.Configuration),
                     Tags = GetTags(options.Configuration),
-                    UsePreviousTemplate = options.UsePreviousTemplate,
+                    TemplateBody = GetTemplateBody(options.Template),
                     Parameters = options.UsePreviousParameters
                         ? GetParameters(options.Parameters, stack)
                         : GetParameters(options.Parameters),
                     Capabilities = GetCapabilities(options.TemplateOptions),
                 };
-
-                if (!options.UsePreviousTemplate)
-                {
-                    request.TemplateBody = GetTemplateBody(options.Template);
-                }
                 
                 console.Out.WriteLine("Parameters:");
                 
@@ -199,14 +194,7 @@ namespace InfrastructureCli.Services
                 
                 console.Out.WriteLine("Template Body:");
                 
-                if (request.UsePreviousTemplate)
-                {
-                    console.Out.WriteLine("(Use Previous Template)");
-                }
-                else
-                {
-                    console.Out.WriteLine(request.TemplateBody);
-                }
+                console.Out.WriteLine(request.TemplateBody);
 
                 var response = await Client.UpdateStackAsync(request);
 

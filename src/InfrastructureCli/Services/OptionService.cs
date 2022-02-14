@@ -22,9 +22,6 @@ namespace InfrastructureCli.Services
         public static FileInfo DefaultConfigurationsFileName(string? directory = null) =>
             new(Path.Combine(directory ?? DefaultDirectory, "configurations.json"));
 
-        public static FileInfo DefaultTemplateFileName(string? directory = null) =>
-            new(Path.Combine(directory ?? DefaultDirectory, "template.json"));
-
         public static string? DefaultEnvironmentVariable(string environmentVariableName) =>
             Environment.GetEnvironmentVariable(environmentVariableName);
     }

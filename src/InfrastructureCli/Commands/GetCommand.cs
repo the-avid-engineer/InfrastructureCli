@@ -36,7 +36,7 @@ namespace InfrastructureCli.Commands
                 PropertyName: configuration.PropertyMaps.GetValueOrDefault(arguments.PropertyName, arguments.PropertyName)
             );
             
-            var propertyValue = configurationsFile.TemplateType switch
+            var propertyValue = configuration.TemplateType switch
             {
                 TemplateType.AwsCloudFormation => await AwsCloudFormationService.Get(getOptions),
                 _ => throw new NotImplementedException()

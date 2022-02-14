@@ -20,8 +20,6 @@ namespace InfrastructureCli.Commands
             IConsole Console,
             FileInfo ConfigurationsFileName,
             string ConfigurationKey,
-            bool UsePreviousTemplate,
-            FileInfo TemplateFileName,
             bool UsePreviousParameters,
             Dictionary<string, string> Parameters,
             FileInfo? FinalTemplateFileName
@@ -42,12 +40,13 @@ namespace InfrastructureCli.Commands
             (
                 new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
                 ChainRewriter.Base,
-                new IncludeFileRewriter(arguments.TemplateFileName.DirectoryName!)
+                new IncludeFileRewriter(arguments.ConfigurationsFileName.DirectoryName!)
             );
             
-            var template = await FileService.DeserializeFromFile<JsonElement>(arguments.TemplateFileName);
-
-            template = rewriter.Rewrite(template);
+            var template = rewriter.Rewrite(configuration.Template);
+            var templateOptions =
+                JsonService.Convert<JsonElement, Dictionary<string, JsonElement>>(
+                    rewriter.Rewrite(configuration.TemplateOptions));
 
             if (arguments.FinalTemplateFileName != null)
             {
@@ -55,48 +54,23 @@ namespace InfrastructureCli.Commands
             }
             
             arguments.Console.Out.WriteLine($"UsePreviousParameters: {arguments.UsePreviousParameters}");
-            arguments.Console.Out.WriteLine($"UsePreviousTemplate: {arguments.UsePreviousTemplate}");
 
             var deployOptions = new DeployOptions
             (
                 Configuration: configuration,
-                UsePreviousTemplate: arguments.UsePreviousTemplate,
                 Template: template,
-                TemplateOptions: configurationsFile.TemplateOptions,
+                TemplateOptions: templateOptions,
                 UsePreviousParameters: arguments.UsePreviousParameters,
                 Parameters: arguments.Parameters
             );
             
-            var success = configurationsFile.TemplateType switch
+            var success = configuration.TemplateType switch
             {
                 TemplateType.AwsCloudFormation => await AwsCloudFormationService.Deploy(arguments.Console, deployOptions),
                 _ => throw new NotImplementedException()
             };
 
             return success ? 0 : 2;
-        }
-
-        private static void AttachTemplateFileNameOption(Command parentCommand)
-        {
-            var templateFileName = new Option<FileInfo>("--template-file-name", () => OptionService.DefaultTemplateFileName())
-            {
-                Description = "The name of the file which contains the template."
-            };
-
-            parentCommand.AddOption(templateFileName);
-        }
-
-        private static void AttachUsePreviousTemplateOption(Command parentCommand)
-        {
-            var usePreviousTemplate = new Option<bool>("--use-previous-template")
-            {
-                Description =
-                    "If you have already deployed the template and don't need to deploy it again, use this option."
-            };
-            
-            usePreviousTemplate.SetDefaultValue(false);
-            
-            parentCommand.AddOption(usePreviousTemplate);
         }
 
         private static void AttachParametersOption(Command parentCommand)
@@ -142,8 +116,6 @@ namespace InfrastructureCli.Commands
             };
 
             AttachConfigurationKeyArgument(deployCommand);
-            AttachUsePreviousTemplateOption(deployCommand);
-            AttachTemplateFileNameOption(deployCommand);
             AttachParametersOption(deployCommand);
             AttachUsePreviousParametersOption(deployCommand);
 
