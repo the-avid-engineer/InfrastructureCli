@@ -23,7 +23,7 @@ namespace InfrastructureCli.Commands
 
             var configuration = configurationsFile.Configurations.GetValueOrDefault(arguments.ConfigurationKey);
 
-            arguments.Console.Out.Write((configuration == default).ToString());
+            arguments.Console.Out.Write((configuration != default).ToString());
 
             return 0;
         }
