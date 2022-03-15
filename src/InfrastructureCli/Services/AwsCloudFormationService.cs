@@ -67,6 +67,13 @@ namespace InfrastructureCli.Services
                 ? JsonService.Convert<JsonElement, List<string>>(capabilitiesElement)
                 : new List<string>();
         }
+
+        private static List<Tag> GetTags(Dictionary<string, JsonElement> templateOptions)
+        {
+            return templateOptions.TryGetValue("Tags", out var tagsElement)
+                ? JsonService.Convert<JsonElement, Dictionary<string, string>>(tagsElement).Select(GetTag).ToList()
+                : new List<Tag>();
+        }
         
         private static List<Parameter> GetParameters(Dictionary<string, string> parameters, Stack stack)
         {
@@ -82,11 +89,6 @@ namespace InfrastructureCli.Services
             }
             
             return parameterDictionary.Values.ToList();
-        }
-
-        private static List<Tag> GetTags(Configuration configuration)
-        {
-            return configuration.Tags.Select(GetTag).ToList();
         }
 
         private static string GetTemplateBody(JsonElement template)
@@ -145,10 +147,10 @@ namespace InfrastructureCli.Services
             var request = new CreateStackRequest
             {
                 StackName = GetStackName(options.Configuration),
-                Tags = GetTags(options.Configuration),
                 TemplateBody = GetTemplateBody(options.Template),
                 Parameters = GetParameters(options.Parameters),
                 Capabilities = GetCapabilities(options.TemplateOptions),
+                Tags = GetTags(options.TemplateOptions),
             };
 
             var response = await Client.CreateStackAsync(request);
@@ -168,12 +170,12 @@ namespace InfrastructureCli.Services
                 var request = new UpdateStackRequest
                 {
                     StackName = GetStackName(options.Configuration),
-                    Tags = GetTags(options.Configuration),
                     TemplateBody = GetTemplateBody(options.Template),
                     Parameters = options.UsePreviousParameters
                         ? GetParameters(options.Parameters, stack)
                         : GetParameters(options.Parameters),
                     Capabilities = GetCapabilities(options.TemplateOptions),
+                    Tags = GetTags(options.TemplateOptions)
                 };
                 
                 console.Out.WriteLine("Parameters:");
