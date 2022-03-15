@@ -3,35 +3,79 @@ A framework for building infrastructure deployment CLI.
 
 ## Configurations File
 
-The configurations file is a JSON file which indicates what kind of deployment it is for (e.g., AwsCloudFormation), and has multiple ways of configuring the infrastructure.
+The configurations file is a JSON file which contains all the information needed to run a deployment; multiple deployments, in fact.
 
 ```json
 {
-    "Type": "...",
     "Configurations": {
         "branch-a": {
+            "TemplateType": "",
+            "TemplateOptions": {},
+            "Template": {},
             "Label": "....",
             "Attributes": {},
-            "Tags": {}
+            "Tags": {},
+            "PropertyMaps": {}
         },
         "...": {}
     }
 }
 ```
 
-`Type` can be `AwsCloudFormation` - more options may come in the future.
+## Configurations
 
-`Configurations` is a dictionary, where the key is whatever you want it to be. You could use GIT branch names, for example, to configure the infrastructure per branch.
+This is a dictionary, where the key is whatever you want it to be. You could use GIT branch names, for example, to configure the infrastructure per branch. The value defines what kind of deployment to perform.
 
-`Label` is a label for the specific configuration. This might be the application name and the environment name combined together.
+### Template Type
 
-`Attributes` is dictionary, where the key is a string and the value is any valid JSON. More on this in the Template File section.
+Possible Values:
 
-`Tags` is a dictionary, where the key and value are strings. Implementation is up to the deployer, but ideally these tags are applied to every resource in the infrastructure deployment. You can retrieve information from this dictionary using `get <configuration key> tag <tag key>`
+1. `"AwsCloudFormation"` - Specifies that the template is for AWS Cloud Formation
 
-`Meta` is a dictionary, where the key and value are strings - and contain any other information about the configuration. The AWS CloudFormation deployment expects an `AccountId` and `Region` entry, to ensure that a deployment always goes to the same place. You can retrieve information from this dictionary using `get <configuration key> meta <meta key>`
+---
 
-## Template File
+### Template Options
+
+This allows you to configure special options for the deployment, which cannot be included in the template itself.
+
+#### AWS Cloud Formation
+
+- `Capabilities` if specifies should be `string[]`
+
+---
+
+### Template
+
+This is the template of the deployment. For the sake of re-usability, you probably want to use `@Fn::IncludeFile` here and specify the complete template elsewhere.  More on this in the Template File Extensions.
+
+#### AWS Cloud Formation
+
+See [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html) for basic information on AWS CloudFormation.
+
+---
+
+### Label
+
+You are free to choose whatever you want here. It should generally be unique, and describe the deployment at a high level.
+
+#### AWS Cloud Formation
+
+This is used as the stack name of the deployment.
+
+---
+
+### Attributes
+
+This is a dictionary, where the key is a string and the value is any valid JSON. More on this in the Template File Extensions.
+
+---
+
+### Tags
+
+This is a dictionary, where the key and value are strings. Implementation is up to the deployer, but ideally these tags are applied to every resource in the infrastructure deployment. ** This may be moved into the `TemplateOptions` property at a future time. It used to make sense as its own thing, but not any more. **
+
+
+## Template File Extensions
 
 The template file is a JSON file which codifies the infrastructure. The template file is passed through a rewriter which will re-write the structure, and allows you to do some basic programming in JSON format. Functions are listed in order of precedence, and the template is processed bottom-up.
 
