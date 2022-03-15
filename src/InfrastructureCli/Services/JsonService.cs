@@ -4,56 +4,55 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace InfrastructureCli.Services
+namespace InfrastructureCli.Services;
+
+public static class JsonService
 {
-    public static class JsonService
+    private static readonly JsonSerializerOptions Indented = new()
     {
-        private static readonly JsonSerializerOptions Indented = new()
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters =
         {
-            WriteIndented = true,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters =
-            {
-                new JsonStringEnumConverter(),
-            }
-        };
-
-        private static readonly JsonSerializerOptions Flat = new()
-        {
-            WriteIndented = false,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Converters =
-            {
-                new JsonStringEnumConverter(),
-            }
-        };
-
-        public static TOut Deserialize<TOut>(string json)
-        {
-            return JsonSerializer.Deserialize<TOut>(json, Indented)!;
+            new JsonStringEnumConverter()
         }
+    };
 
-        public static async Task<TOut> DeserializeAsync<TOut>(Stream stream)
+    private static readonly JsonSerializerOptions Flat = new()
+    {
+        WriteIndented = false,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Converters =
         {
-            return (await JsonSerializer.DeserializeAsync<TOut>(stream, Indented))!;
+            new JsonStringEnumConverter()
         }
+    };
 
-        public static async Task SerializeAsync<TIn>(TIn @in, Stream stream)
-        {
-            await JsonSerializer.SerializeAsync(stream, @in, Indented);
-        }
+    public static TOut Deserialize<TOut>(string json)
+    {
+        return JsonSerializer.Deserialize<TOut>(json, Indented)!;
+    }
 
-        public static string Serialize<TIn>(TIn @in)
-        {
-            return JsonSerializer.Serialize(@in, Flat);
-        }
+    public static async Task<TOut> DeserializeAsync<TOut>(Stream stream)
+    {
+        return (await JsonSerializer.DeserializeAsync<TOut>(stream, Indented))!;
+    }
 
-        public static TOut Convert<TIn, TOut>(TIn @in)
-        {
-            var json = Serialize(@in);
+    public static async Task SerializeAsync<TIn>(TIn @in, Stream stream)
+    {
+        await JsonSerializer.SerializeAsync(stream, @in, Indented);
+    }
+
+    public static string Serialize<TIn>(TIn @in)
+    {
+        return JsonSerializer.Serialize(@in, Flat);
+    }
+
+    public static TOut Convert<TIn, TOut>(TIn @in)
+    {
+        var json = Serialize(@in);
             
-            return JsonSerializer.Deserialize<TOut>(json, Flat)!;
-        }
+        return JsonSerializer.Deserialize<TOut>(json, Flat)!;
     }
 }

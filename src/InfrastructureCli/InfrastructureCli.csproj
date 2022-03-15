@@ -32,7 +32,6 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.CloudFormation" Version="3.7.9.14" />
-    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.1.128" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
     <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta3.22114.1" />
   </ItemGroup>

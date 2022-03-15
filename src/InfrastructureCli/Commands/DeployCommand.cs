@@ -11,118 +11,117 @@ using InfrastructureCli.Rewriters;
 using InfrastructureCli.Services;
 using InfrastructureCli.Extensions;
 
-namespace InfrastructureCli.Commands
+namespace InfrastructureCli.Commands;
+
+internal class DeployCommand : CommandBase
 {
-    internal class DeployCommand : CommandBase
-    {
-        private record Arguments
-        (
-            IConsole Console,
-            FileInfo ConfigurationsFileName,
-            string ConfigurationKey,
-            bool UsePreviousParameters,
-            Dictionary<string, string> Parameters,
-            FileInfo? FinalTemplateFileName
-        );
+    private record Arguments
+    (
+        IConsole Console,
+        FileInfo ConfigurationsFileName,
+        string ConfigurationKey,
+        bool UsePreviousParameters,
+        Dictionary<string, string> Parameters,
+        FileInfo? FinalTemplateFileName
+    );
         
-        private static async Task<int> Execute(Arguments arguments)
+    private static async Task<int> Execute(Arguments arguments)
+    {
+        var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(arguments.ConfigurationsFileName);
+
+        var configuration = configurationsFile.Configurations.GetValueOrDefault(arguments.ConfigurationKey);
+
+        if (configuration == default)
         {
-            var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(arguments.ConfigurationsFileName);
-
-            var configuration = configurationsFile.Configurations.GetValueOrDefault(arguments.ConfigurationKey);
-
-            if (configuration == default)
-            {
-                return 1;
-            }
-
-            var rewriter = new ChainRewriter
-            (
-                new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
-                ChainRewriter.Base,
-                new IncludeFileRewriter(arguments.ConfigurationsFileName.DirectoryName!)
-            );
-            
-            var template = rewriter.Rewrite(configuration.Template);
-            var templateOptions =
-                JsonService.Convert<JsonElement, Dictionary<string, JsonElement>>(
-                    rewriter.Rewrite(configuration.TemplateOptions));
-
-            if (arguments.FinalTemplateFileName != null)
-            {
-                await FileService.SerializeToFile(template, arguments.FinalTemplateFileName);
-            }
-            
-            arguments.Console.Out.WriteLine($"UsePreviousParameters: {arguments.UsePreviousParameters}");
-
-            var deployOptions = new DeployOptions
-            (
-                Configuration: configuration,
-                Template: template,
-                TemplateOptions: templateOptions,
-                UsePreviousParameters: arguments.UsePreviousParameters,
-                Parameters: arguments.Parameters
-            );
-            
-            var success = configuration.TemplateType switch
-            {
-                TemplateType.AwsCloudFormation => await AwsCloudFormationService.Deploy(arguments.Console, deployOptions),
-                _ => throw new NotImplementedException()
-            };
-
-            return success ? 0 : 2;
+            return 1;
         }
 
-        private static void AttachParametersOption(Command parentCommand)
+        var rewriter = new ChainRewriter
+        (
+            new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
+            ChainRewriter.Base,
+            new IncludeFileRewriter(arguments.ConfigurationsFileName.DirectoryName!)
+        );
+            
+        var template = rewriter.Rewrite(configuration.Template);
+        var templateOptions =
+            JsonService.Convert<JsonElement, Dictionary<string, JsonElement>>(
+                rewriter.Rewrite(configuration.TemplateOptions));
+
+        if (arguments.FinalTemplateFileName != null)
         {
-            var parameters = new Option<Dictionary<string, string>>("--parameters", OptionService.ParseDictionary)
-            {
-                Description = "Use this to specify parameter values."
-            };
-            
-            parameters.AddAlias("-p");
-            
-            parentCommand.AddOption(parameters);
+            await FileService.SerializeToFile(template, arguments.FinalTemplateFileName);
         }
+            
+        arguments.Console.Out.WriteLine($"UsePreviousParameters: {arguments.UsePreviousParameters}");
 
-        private static void AttachUsePreviousParametersOption(Command parentCommand)
+        var deployOptions = new DeployOptions
+        (
+            configuration,
+            template,
+            templateOptions,
+            arguments.UsePreviousParameters,
+            arguments.Parameters
+        );
+            
+        var success = configuration.TemplateType switch
         {
-            var usePreviousParameters = new Option<bool>("--use-previous-parameters")
-            {
-                Description = "Use this if you want to use the previous parameter values by default."
-            };
-            
-            usePreviousParameters.SetDefaultValue(false);
-            
-            parentCommand.AddOption(usePreviousParameters);
-        }
+            TemplateType.AwsCloudFormation => await AwsCloudFormationService.Deploy(arguments.Console, deployOptions),
+            _ => throw new NotImplementedException()
+        };
 
-        private static void AttachFinalTemplateFileNameOption(Command parentCommand)
+        return success ? 0 : 2;
+    }
+
+    private static void AttachParametersOption(Command parentCommand)
+    {
+        var parameters = new Option<Dictionary<string, string>>("--parameters", OptionService.ParseDictionary)
         {
-            var finalTemplateFileName = new Option<FileInfo>("--final-template-file-name")
-            {
-                Description = "Use this if you want the final (i.e., rewritten) template to be written to a file."
-            };
+            Description = "Use this to specify parameter values."
+        };
             
-            parentCommand.AddOption(finalTemplateFileName);
-        }
+        parameters.AddAlias("-p");
+            
+        parentCommand.AddOption(parameters);
+    }
 
-        public static void Attach(RootCommand rootCommand)
+    private static void AttachUsePreviousParametersOption(Command parentCommand)
+    {
+        var usePreviousParameters = new Option<bool>("--use-previous-parameters")
         {
-            var deployCommand = new Command("deploy")
-            {
-                Handler = CommandHandler.Create<Arguments>(Execute),
-                Description = "Deploy the configuration to its appropriate service."
-            };
+            Description = "Use this if you want to use the previous parameter values by default."
+        };
+            
+        usePreviousParameters.SetDefaultValue(false);
+            
+        parentCommand.AddOption(usePreviousParameters);
+    }
 
-            AttachConfigurationKeyArgument(deployCommand);
-            AttachParametersOption(deployCommand);
-            AttachUsePreviousParametersOption(deployCommand);
+    private static void AttachFinalTemplateFileNameOption(Command parentCommand)
+    {
+        var finalTemplateFileName = new Option<FileInfo>("--final-template-file-name")
+        {
+            Description = "Use this if you want the final (i.e., rewritten) template to be written to a file."
+        };
+            
+        parentCommand.AddOption(finalTemplateFileName);
+    }
 
-            AttachConfigurationsFileNameOption(deployCommand);
-            AttachFinalTemplateFileNameOption(deployCommand);
+    public static void Attach(RootCommand rootCommand)
+    {
+        var deployCommand = new Command("deploy")
+        {
+            Handler = CommandHandler.Create<Arguments>(Execute),
+            Description = "Deploy the configuration to its appropriate service."
+        };
 
-            rootCommand.AddCommand(deployCommand);
-        }
+        AttachConfigurationKeyArgument(deployCommand);
+        AttachParametersOption(deployCommand);
+        AttachUsePreviousParametersOption(deployCommand);
+
+        AttachConfigurationsFileNameOption(deployCommand);
+        AttachFinalTemplateFileNameOption(deployCommand);
+
+        rootCommand.AddCommand(deployCommand);
     }
 }

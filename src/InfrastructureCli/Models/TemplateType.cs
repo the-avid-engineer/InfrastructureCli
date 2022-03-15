@@ -1,7 +1,6 @@
-﻿namespace InfrastructureCli.Models
+﻿namespace InfrastructureCli.Models;
+
+public enum TemplateType
 {
-    public enum TemplateType
-    {
-        AwsCloudFormation,
-    }
+    AwsCloudFormation
 }

@@ -15,14 +15,6 @@
         "resolved": "3.7.8.10",
         "contentHash": "WoOQlpgC2l98GgKFdvPNiIPlyoD/XqHB+oR8CVw2cM0NCuFwJ168zgwnKZOs9TRhP0KBhb0CPTN2Gb+DvUtyNA=="
       },
-      "AWSSDK.SecurityToken": {
-        "type": "Transitive",
-        "resolved": "3.7.1.128",
-        "contentHash": "rAhsDE4dpedDi85A+SR7LK9YcrCCCzuzHOVAh9HThjOOXnNL4iW4sXHT2y0hRAm7xNyr6zGFMUHTvYqxAkYOmA==",
-        "dependencies": {
-          "AWSSDK.Core": "[3.7.8.10, 4.0.0)"
-        }
-      },
       "System.CommandLine": {
         "type": "Transitive",
         "resolved": "2.0.0-beta3.22114.1",
@@ -40,7 +32,6 @@
         "type": "Project",
         "dependencies": {
           "AWSSDK.CloudFormation": "3.7.9.14",
-          "AWSSDK.SecurityToken": "3.7.1.128",
           "System.CommandLine": "2.0.0-beta3.22114.1",
           "System.CommandLine.NamingConventionBinder": "2.0.0-beta3.22114.1"
         }

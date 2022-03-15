@@ -2,28 +2,27 @@
 using System.CommandLine;
 using System.Threading.Tasks;
 
-namespace InfrastructureCli.Commands
+namespace InfrastructureCli.Commands;
+
+public class ProgramCommand
 {
-    public class ProgramCommand
+    private readonly RootCommand _rootCommand;
+
+    public ProgramCommand(IEnumerable<IGenerateCommand> generateCommands)
     {
-        private readonly RootCommand _rootCommand;
+        var rootCommand = new RootCommand();
 
-        public ProgramCommand(IEnumerable<IGenerateCommand> generateCommands)
-        {
-            var rootCommand = new RootCommand();
+        InteractiveCommand.Attach(rootCommand);
+        NewCommand.Attach(rootCommand, generateCommands);
+        CanDeployCommand.Attach(rootCommand);
+        DeployCommand.Attach(rootCommand);
+        GetCommand.Attach(rootCommand);
 
-            InteractiveCommand.Attach(rootCommand);
-            NewCommand.Attach(rootCommand, generateCommands);
-            CanDeployCommand.Attach(rootCommand);
-            DeployCommand.Attach(rootCommand);
-            GetCommand.Attach(rootCommand);
+        _rootCommand = rootCommand;
+    }
 
-            _rootCommand = rootCommand;
-        }
-
-        public Task<int> Invoke(string[] args)
-        {
-            return _rootCommand.InvokeAsync(args);
-        }
+    public Task<int> Invoke(string[] args)
+    {
+        return _rootCommand.InvokeAsync(args);
     }
 }

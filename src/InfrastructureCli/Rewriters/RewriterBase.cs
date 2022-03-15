@@ -1,69 +1,62 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 
-namespace InfrastructureCli.Rewriters
+namespace InfrastructureCli.Rewriters;
+
+internal abstract class RewriterBase
 {
-    internal abstract class RewriterBase
+    protected static bool IsNormalObject(JsonElement jsonElement)
     {
-        // protected static bool IsNormalString(JsonElement jsonElement)
-        // {
-        //     //@{}
-        // }
+        return TryGetProperties(jsonElement, out _);
+    }
         
-        protected static bool IsNormalObject(JsonElement jsonElement)
+    protected static bool TryGetProperties(JsonElement jsonElement, out JsonProperty[] jsonProperties)
+    {
+        jsonProperties = default!;
+            
+        if (jsonElement.ValueKind != JsonValueKind.Object)
         {
-            return TryGetProperties(jsonElement, out _);
+            return false;
         }
+            
+        jsonProperties = jsonElement
+            .EnumerateObject()
+            .ToArray();
+
+        return jsonProperties.Length != 1 || !jsonProperties[0].Name.StartsWith("@Fn::");
+    }
         
-        protected static bool TryGetProperties(JsonElement jsonElement, out JsonProperty[] jsonProperties)
-        {
-            jsonProperties = default!;
-            
-            if (jsonElement.ValueKind != JsonValueKind.Object)
-            {
-                return false;
-            }
-            
-            jsonProperties = jsonElement
-                .EnumerateObject()
-                .ToArray();
+    protected static bool TryGetArguments(JsonElement jsonElement, string functionName, out JsonElement argumentsElement)
+    {
+        argumentsElement = default!;
 
-            return jsonProperties.Length != 1 || !jsonProperties[0].Name.StartsWith("@Fn::");
+        if (jsonElement.ValueKind != JsonValueKind.Object)
+        {
+            return false;
         }
+
+        var jsonProperties = jsonElement.EnumerateObject().ToArray();
+
+        if (jsonProperties.Length != 1 || jsonProperties[0].Name != $"@Fn::{functionName}")
+        {
+            return false;
+        }
+
+        argumentsElement = jsonProperties[0].Value;
+        return true;
+    }
         
-        protected static bool TryGetArguments(JsonElement jsonElement, string functionName, out JsonElement argumentsElement)
-        {
-            argumentsElement = default!;
-
-            if (jsonElement.ValueKind != JsonValueKind.Object)
-            {
-                return false;
-            }
-
-            var jsonProperties = jsonElement.EnumerateObject().ToArray();
-
-            if (jsonProperties.Length != 1 || jsonProperties[0].Name != $"@Fn::{functionName}")
-            {
-                return false;
-            }
-
-            argumentsElement = jsonProperties[0].Value;
-            return true;
-        }
-        
-        protected static JsonElement BuildJsonElement(Action<Utf8JsonWriter> processor)
-        {
-            using var memoryStream = new MemoryStream();
-            using var jsonWriter = new Utf8JsonWriter(memoryStream);
+    protected static JsonElement BuildJsonElement(Action<Utf8JsonWriter> processor)
+    {
+        using var memoryStream = new MemoryStream();
+        using var jsonWriter = new Utf8JsonWriter(memoryStream);
             
-            processor.Invoke(jsonWriter);
+        processor.Invoke(jsonWriter);
             
-            jsonWriter.Flush();
+        jsonWriter.Flush();
 
-            return JsonSerializer.Deserialize<JsonElement>(memoryStream.ToArray());
-        }
+        return JsonSerializer.Deserialize<JsonElement>(memoryStream.ToArray());
     }
 }

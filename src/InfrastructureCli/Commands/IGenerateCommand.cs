@@ -1,9 +1,8 @@
 ﻿using System.CommandLine;
 
-namespace InfrastructureCli.Commands
+namespace InfrastructureCli.Commands;
+
+public interface IGenerateCommand
 {
-    public interface IGenerateCommand
-    {
-        void Attach(Command parentCommand);
-    }
+    void Attach(Command parentCommand);
 }

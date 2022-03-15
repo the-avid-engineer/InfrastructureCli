@@ -7,54 +7,53 @@ using InfrastructureCli.Services;
 using Shouldly;
 using Xunit;
 
-namespace InfrastructureCli.Tests.JsonElementExtensions
+namespace InfrastructureCli.Tests.JsonElementExtensions;
+
+public class JsonElementExtensionsTests
 {
-    public class JsonElementExtensionsTests
+    [Theory]
+    [InlineData("GetAttributeValueDefined")]
+    [InlineData("GetAttributeValueUndefined")]
+    [InlineData("IncludeFile")]
+    [InlineData("MapElements")]
+    [InlineData("MapProperties")]
+    [InlineData("GetPropertyValueDefined")]
+    [InlineData("GetPropertyValueUndefined")]
+    [InlineData("SpreadElements")]
+    [InlineData("SpreadProperties")]
+    [InlineData("Serialize")]
+    [InlineData("IntProduct")]
+    [InlineData("Precedence")]
+    public async Task RewriteFixtureTests(string fixtureName)
     {
-        [Theory]
-        [InlineData("GetAttributeValueDefined")]
-        [InlineData("GetAttributeValueUndefined")]
-        [InlineData("IncludeFile")]
-        [InlineData("MapElements")]
-        [InlineData("MapProperties")]
-        [InlineData("GetPropertyValueDefined")]
-        [InlineData("GetPropertyValueUndefined")]
-        [InlineData("SpreadElements")]
-        [InlineData("SpreadProperties")]
-        [InlineData("Serialize")]
-        [InlineData("IntProduct")]
-        [InlineData("Precedence")]
-        public async Task RewriteFixtureTests(string fixtureName)
-        {
-            // ARRANGE
+        // ARRANGE
 
-            var currentPath = Path.Combine("Fixtures", "JsonElementExtensions", fixtureName);
+        var currentPath = Path.Combine("Fixtures", "JsonElementExtensions", fixtureName);
             
-            var inputFileName = Path.Combine(currentPath, "input.json");
-            var expectedOutputFileName = Path.Combine(currentPath, "expectedOutput.json");
+        var inputFileName = Path.Combine(currentPath, "input.json");
+        var expectedOutputFileName = Path.Combine(currentPath, "expectedOutput.json");
 
-            await using var inputFile = File.OpenRead(inputFileName);
-            await using var expectedOutputFile = File.OpenRead(expectedOutputFileName);
+        await using var inputFile = File.OpenRead(inputFileName);
+        await using var expectedOutputFile = File.OpenRead(expectedOutputFileName);
 
-            var input = await JsonService.DeserializeAsync<JsonElement>(inputFile);
-            var expectedOutput = await JsonService.DeserializeAsync<JsonElement>(expectedOutputFile);
+        var input = await JsonService.DeserializeAsync<JsonElement>(inputFile);
+        var expectedOutput = await JsonService.DeserializeAsync<JsonElement>(expectedOutputFile);
 
-            // ACT
+        // ACT
 
-            var rewriter = new ChainRewriter
-            (
-                ChainRewriter.Base,
-                new IncludeFileRewriter(currentPath)
-            );
+        var rewriter = new ChainRewriter
+        (
+            ChainRewriter.Base,
+            new IncludeFileRewriter(currentPath)
+        );
             
-            var actualOutput = rewriter.Rewrite(input);
+        var actualOutput = rewriter.Rewrite(input);
 
-            var formattedExpectedOutput = JsonService.Serialize(expectedOutput);
-            var formattedActualOutput = JsonService.Serialize(actualOutput);
+        var formattedExpectedOutput = JsonService.Serialize(expectedOutput);
+        var formattedActualOutput = JsonService.Serialize(actualOutput);
 
-            // ASSERT
+        // ASSERT
 
-            formattedActualOutput.ShouldBe(formattedExpectedOutput);
-        }
+        formattedActualOutput.ShouldBe(formattedExpectedOutput);
     }
 }

@@ -11,15 +11,6 @@
           "AWSSDK.Core": "[3.7.8.10, 4.0.0)"
         }
       },
-      "AWSSDK.SecurityToken": {
-        "type": "Direct",
-        "requested": "[3.7.1.128, )",
-        "resolved": "3.7.1.128",
-        "contentHash": "rAhsDE4dpedDi85A+SR7LK9YcrCCCzuzHOVAh9HThjOOXnNL4iW4sXHT2y0hRAm7xNyr6zGFMUHTvYqxAkYOmA==",
-        "dependencies": {
-          "AWSSDK.Core": "[3.7.8.10, 4.0.0)"
-        }
-      },
       "System.CommandLine": {
         "type": "Direct",
         "requested": "[2.0.0-beta3.22114.1, )",
