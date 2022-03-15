@@ -3,8 +3,8 @@
   <!--Application-->
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -31,10 +31,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.CloudFormation" Version="3.7.7.16" />
-    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.1.110" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
-    <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta2.21617.1" />
+    <PackageReference Include="AWSSDK.CloudFormation" Version="3.7.9.14" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.1.128" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
+    <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta3.22114.1" />
   </ItemGroup>
 
 </Project>

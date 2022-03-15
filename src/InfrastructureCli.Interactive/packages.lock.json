@@ -1,56 +1,48 @@
 {
   "version": 1,
   "dependencies": {
-    ".NETCoreApp,Version=v5.0": {
+    "net6.0": {
       "AWSSDK.CloudFormation": {
         "type": "Transitive",
-        "resolved": "3.7.7.16",
-        "contentHash": "XJPOaOV5PALhs0HFbE64DwLOnmp4XEhcwo8e0jfCHmAeB3F5wYp5lk8B7mbdwvOw3vz6vaYPNBeIFs0rmhbTyA==",
+        "resolved": "3.7.9.14",
+        "contentHash": "u5OX5vDfWQfrE9S9zqFCOFC2Hw85IhWWeIT51ACN+IIYPCXOe7MG5ahhii4SUrZh5CsOoV9+/5O+nBF1TztYzg==",
         "dependencies": {
-          "AWSSDK.Core": "[3.7.6.2, 4.0.0)"
+          "AWSSDK.Core": "[3.7.8.10, 4.0.0)"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "3.7.6.2",
-        "contentHash": "oo7HAROGqVLDZY5UfNsq8R5kQNv2uainLe46f7tq5CscmAF6xXhZor7L+lSytvL2NZBVrBcoJZkljImFh1604w=="
+        "resolved": "3.7.8.10",
+        "contentHash": "WoOQlpgC2l98GgKFdvPNiIPlyoD/XqHB+oR8CVw2cM0NCuFwJ168zgwnKZOs9TRhP0KBhb0CPTN2Gb+DvUtyNA=="
       },
       "AWSSDK.SecurityToken": {
         "type": "Transitive",
-        "resolved": "3.7.1.110",
-        "contentHash": "nKrLF3wTpnZ8oT4Lb7S2UtRIJQ4GNrJvlyY6kzn+LezESVygollOSIVOcQQQyh5tIVE+rqj38eOa6aEaheOdZQ==",
+        "resolved": "3.7.1.128",
+        "contentHash": "rAhsDE4dpedDi85A+SR7LK9YcrCCCzuzHOVAh9HThjOOXnNL4iW4sXHT2y0hRAm7xNyr6zGFMUHTvYqxAkYOmA==",
         "dependencies": {
-          "AWSSDK.Core": "[3.7.6.2, 4.0.0)"
+          "AWSSDK.Core": "[3.7.8.10, 4.0.0)"
         }
       },
       "System.CommandLine": {
         "type": "Transitive",
-        "resolved": "2.0.0-beta2.21617.1",
-        "contentHash": "ZZqhoSu8ibW8zwAehKSQ1B3UMwZx6Dmt6oBbEMA8YD5EpyOm2ab7xQfzbN21Xi85KGJQkgeEf5wbsGHYE93cYQ==",
-        "dependencies": {
-          "system.memory": "4.5.4"
-        }
+        "resolved": "2.0.0-beta3.22114.1",
+        "contentHash": "QMzk1jj+PzdGbwuVsxII7FcQaCelnK+TcRcAqOGVoPovLBCSQPdikKiEzb56vAidvum5t4LSdDZ34O4j7+ALgw=="
       },
       "System.CommandLine.NamingConventionBinder": {
         "type": "Transitive",
-        "resolved": "2.0.0-beta2.21617.1",
-        "contentHash": "5cBvkPhW3W8h06539Z0aAxgjfVDim4RNk8ru2vySC5tQU35iYw2dHsJ7UsQemiQLAKbUaESC/9d3JoBk1pOV1A==",
+        "resolved": "2.0.0-beta3.22114.1",
+        "contentHash": "sNy+prEfFXmNPL29FRaS35rwCT9gpXRT/LywFnCw1iB8b3aIp5eDOL0ykKrVdLVP3pYSvrBWVvb7cQZVMwE69A==",
         "dependencies": {
-          "System.CommandLine": "2.0.0-beta2.21617.1"
+          "System.CommandLine": "2.0.0-beta3.22114.1"
         }
-      },
-      "System.Memory": {
-        "type": "Transitive",
-        "resolved": "4.5.4",
-        "contentHash": "1MbJTHS1lZ4bS4FmsJjnuGJOu88ZzTT2rLvrhW7Ygic+pC0NWA+3hgAen0HRdsocuQXCkUTdFn9yHJJhsijDXw=="
       },
       "infrastructurecli": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.CloudFormation": "3.7.7.16",
-          "AWSSDK.SecurityToken": "3.7.1.110",
-          "System.CommandLine": "2.0.0-beta2.21617.1",
-          "System.CommandLine.NamingConventionBinder": "2.0.0-beta2.21617.1"
+          "AWSSDK.CloudFormation": "3.7.9.14",
+          "AWSSDK.SecurityToken": "3.7.1.128",
+          "System.CommandLine": "2.0.0-beta3.22114.1",
+          "System.CommandLine.NamingConventionBinder": "2.0.0-beta3.22114.1"
         }
       }
     }
