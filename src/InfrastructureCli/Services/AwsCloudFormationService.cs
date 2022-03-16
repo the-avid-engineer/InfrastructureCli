@@ -50,9 +50,11 @@ internal static class AwsCloudFormationService
         };
     }
 
-    private static string GetStackName(Configuration configuration)
+    private static string GetStackName(IReadOnlyDictionary<string, JsonElement> templateOptions)
     {
-        return configuration.Label;
+        return templateOptions.TryGetValue("StackName", out var stackNameElement)
+            ? JsonService.Convert<JsonElement, string>(stackNameElement)
+            : throw new ArgumentException("Missing Required StackName Template Option.", nameof(templateOptions));
     }
 
     private static List<Parameter> GetParameters(Dictionary<string, string> parameters)
@@ -94,8 +96,8 @@ internal static class AwsCloudFormationService
 
     private static async Task<Stack?> GetStack(Configuration configuration)
     {
-        var stackName = GetStackName(configuration);
-            
+        var stackName = GetStackName(configuration.TemplateOptions);
+        
         try
         {
             var request = new DescribeStacksRequest
@@ -142,11 +144,11 @@ internal static class AwsCloudFormationService
     {
         var request = new CreateStackRequest
         {
-            StackName = GetStackName(options.Configuration),
+            StackName = GetStackName(options.Configuration.TemplateOptions),
+            Capabilities = GetCapabilities(options.Configuration.TemplateOptions),
+            Tags = GetTags(options.Configuration.TemplateOptions),
             TemplateBody = GetTemplateBody(options.Template),
-            Parameters = GetParameters(options.Parameters),
-            Capabilities = GetCapabilities(options.TemplateOptions),
-            Tags = GetTags(options.TemplateOptions)
+            Parameters = GetParameters(options.Parameters)
         };
 
         var response = await Client.CreateStackAsync(request);
@@ -165,13 +167,13 @@ internal static class AwsCloudFormationService
         {
             var request = new UpdateStackRequest
             {
-                StackName = GetStackName(options.Configuration),
+                StackName = GetStackName(options.Configuration.TemplateOptions),
+                Capabilities = GetCapabilities(options.Configuration.TemplateOptions),
+                Tags = GetTags(options.Configuration.TemplateOptions),
                 TemplateBody = GetTemplateBody(options.Template),
                 Parameters = options.UsePreviousParameters
                     ? GetParameters(options.Parameters, stack)
-                    : GetParameters(options.Parameters),
-                Capabilities = GetCapabilities(options.TemplateOptions),
-                Tags = GetTags(options.TemplateOptions)
+                    : GetParameters(options.Parameters)
             };
                 
             console.Out.WriteLine("Parameters:");

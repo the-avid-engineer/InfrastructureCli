@@ -44,9 +44,6 @@ internal class DeployCommand : CommandBase
         );
             
         var template = rewriter.Rewrite(configuration.Template);
-        var templateOptions =
-            JsonService.Convert<JsonElement, Dictionary<string, JsonElement>>(
-                rewriter.Rewrite(configuration.TemplateOptions));
 
         if (arguments.FinalTemplateFileName != null)
         {
@@ -59,7 +56,6 @@ internal class DeployCommand : CommandBase
         (
             configuration,
             template,
-            templateOptions,
             arguments.UsePreviousParameters,
             arguments.Parameters
         );

@@ -7,7 +7,6 @@ internal record DeployOptions
 (
     Configuration Configuration,
     JsonElement Template,
-    Dictionary<string, JsonElement> TemplateOptions,
     bool UsePreviousParameters,
     Dictionary<string, string> Parameters
 );
