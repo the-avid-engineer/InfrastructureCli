@@ -526,3 +526,44 @@ Would be rewritten as:
   }
 }
 ```
+
+---
+
+### @Fn::IncludeRawFile
+
+If your template needs some property with a value that is essentially a file (but not a JSON file), you can separate that value into a file and include it with this function.
+
+File names are relative to the directory of the file in which the function is invoked.
+
+So if this is your file structure:
+
+```
+config-file.txt
+```
+
+And `config-file.txt` looks like this:
+
+```txt
+Some text configuration file with all
+sorts of "symbols" and line breaks
+```
+
+Then `/template.json`:
+
+```json
+{
+  "SomeProperty": {
+    "@Fn::IncludeRawFile": [
+      "config-file.txt"
+    ]
+  }
+}
+```
+
+Would be re-written as:
+
+```json
+{
+  "SomeProperty": "Some text configuration file with all\nsorts of \"symbols\" and line breaks"
+}
+```
