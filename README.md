@@ -12,9 +12,7 @@ The configurations file is a JSON file which contains all the information needed
             "TemplateType": "",
             "TemplateOptions": {},
             "Template": {},
-            "Label": "....",
             "Attributes": {},
-            "Tags": {},
             "PropertyMaps": {}
         },
         "...": {}
@@ -25,6 +23,8 @@ The configurations file is a JSON file which contains all the information needed
 ## Configurations
 
 This is a dictionary, where the key is whatever you want it to be. You could use GIT branch names, for example, to configure the infrastructure per branch. The value defines what kind of deployment to perform.
+
+---
 
 ### Template Type
 
@@ -40,7 +40,11 @@ This allows you to configure special options for the deployment, which cannot be
 
 #### AWS Cloud Formation
 
-- `Capabilities` if specifies should be `string[]`
+- Required: `StackName` should be equivalent to `string`
+- Optional: `Capabilities` if specified should be equivalent to `string[]`
+- Optional: `Tags` if specified should be equivalent to `Dictionary<string, string>`
+
+See [CreateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateStack.html) and [UpdateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_UpdateStack.html) for more information.
 
 ---
 
@@ -50,17 +54,7 @@ This is the template of the deployment. For the sake of re-usability, you probab
 
 #### AWS Cloud Formation
 
-See [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html) for basic information on AWS CloudFormation.
-
----
-
-### Label
-
-You are free to choose whatever you want here. It should generally be unique, and describe the deployment at a high level.
-
-#### AWS Cloud Formation
-
-This is used as the stack name of the deployment.
+See [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html) for more information.
 
 ---
 
@@ -69,11 +63,6 @@ This is used as the stack name of the deployment.
 This is a dictionary, where the key is a string and the value is any valid JSON. More on this in the Template File Extensions.
 
 ---
-
-### Tags
-
-This is a dictionary, where the key and value are strings. Implementation is up to the deployer, but ideally these tags are applied to every resource in the infrastructure deployment. ** This may be moved into the `TemplateOptions` property at a future time. It used to make sense as its own thing, but not any more. **
-
 
 ## Template File Extensions
 
