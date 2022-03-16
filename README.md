@@ -1,6 +1,53 @@
 # InfrastructureCli
 A framework for building infrastructure deployment CLI.
 
+## Out-of-the-box commands
+
+To consume this package, you will want an executable project whose `Program.cs` file creates a new `ProgramCommand` instance. This class tages an array of `IGenerateCommand` objects, which will by available on the `new` sub-command produced by the `ProgramCommand`.
+
+Your instances of `IGenerateCommand` are your way of generating a configurations file (one for each `IGenerateCommand`) as well as an associated template files you may want to include.
+
+
+```cs
+public static class Program
+{
+    public static Task<int> Main(string[] args)
+    {
+        var programCommand = new ProgramCommand(new[]
+        {
+            new GenerateSomeSpecificTemplateCommand(),
+        });
+
+        return programCommand.Invoke(args);
+    }
+}
+```
+
+Run with option `--help` to see all available commands.
+
+---
+
+## Copying resources with ease
+
+You may easily copy a set of embedded files using the `EmbeddedResourcesService.Copy` method. The first argument is the directory where you want the files to be copied to. The second argument is the assembly containing the embedded resources. The third argument is an array of resource name prefixes you want to copy to the output directory. Dots (`.`) are treated as folders, and any dots after the specified prefix will be used as the folder structure when copying the files. The prefix part of the name _will not_ be included in the file structure. The exception is the _last_ dot, which will be treated as the file extension. Multiple dots in a file name are not supported by this service.
+
+For example, if you have the following embedded resource names:
+
+`My.Namespace.Where.Embedded.Resources.Are.NonFolderTemplate.json`
+`My.Namespace.Where.Embedded.Resources.Are.FolderName.FolderTemplate.json`
+
+And you specify:
+
+`My.Namespace.Where.Embedded.Resources.Are.`
+
+The resources will be copied like this:
+
+- NonFolderTemplate.json
+- FolderName
+  - FolderTemplate.json
+
+---
+
 ## Configurations File
 
 The configurations file is a JSON file which contains all the information needed to run a deployment; multiple deployments, in fact.
