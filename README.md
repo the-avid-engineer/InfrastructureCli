@@ -99,7 +99,7 @@ See [CreateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIRefere
 
 This is the template of the deployment. For the sake of re-usability, you probably want to use `@Fn::IncludeFile` here and specify the complete template elsewhere.  More on this in the Template File Extensions.
 
-#### AWS Cloud ormation
+#### AWS CloudFormation
 
 See [User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html) for more information.
 
@@ -199,7 +199,7 @@ For example:
 ```json
 {
     "ParentProperty": {
-        "@Fn::Map": [
+        "@Fn::MapElements": [
             ["a","b","c"],
             {
                 "@{ElementIndex}": {
@@ -259,7 +259,7 @@ For example:
 ```json
 {
     "ParentProperty": {
-        "@Fn::Map": [
+        "@Fn::MapProperties": [
             {
                 "a": "alpha",
                 "b": "beta",
@@ -375,7 +375,7 @@ For Example:
 
 ```json
 {
-  "@Fn::Spread": [
+  "@Fn::SpreadElements": [
     [
       "a",
       "b",
@@ -411,7 +411,7 @@ For example:
 
 ```json
 {
-  "@Fn::Spread": [
+  "@Fn::SpreadProperties": [
     {
       "a": "a",
       "b": "b",
