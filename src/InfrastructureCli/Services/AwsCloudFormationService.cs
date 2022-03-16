@@ -69,6 +69,12 @@ internal static class AwsCloudFormationService
             : new List<string>();
     }
 
+    private static bool GetUseChangeSet(IReadOnlyDictionary<string, JsonElement> templateOptions)
+    {
+        return templateOptions.TryGetValue("UseChangeSet", out var useChangeSetElement) &&
+               JsonService.Convert<JsonElement, bool>(useChangeSetElement);
+    }
+    
     private static List<Tag> GetTags(IReadOnlyDictionary<string, JsonElement> templateOptions)
     {
         return templateOptions.TryGetValue("Tags", out var tagsElement)
@@ -115,6 +121,37 @@ internal static class AwsCloudFormationService
         }
     }
 
+    private static void LogParameters(IConsole console, List<Parameter> parameters)
+    {
+        console.Out.WriteLine("Parameters:");
+                
+        foreach (var parameter in parameters)
+        {
+            console.Out.WriteLine(parameter.UsePreviousValue
+                ? $"{parameter.ParameterKey} = (Use Previous Value)"
+                : $"{parameter.ParameterKey} = {parameter.ParameterValue}");
+        }
+
+        console.Out.WriteLine();
+    }
+
+    private static void LogTemplateBody(IConsole console, string templateBody)
+    {      
+        console.Out.WriteLine("Template Body:");
+                
+        console.Out.WriteLine(templateBody);
+
+        console.Out.WriteLine();
+    }
+
+    private static string GenerateChangeSetName()
+    {
+        var dateTime = DateTime.UtcNow;
+        var guid = Guid.NewGuid();
+
+        return $"on--{dateTime:yyyy-M-d}--at--{dateTime:h-mm-ss-tt}--{guid}";
+    }
+    
     private static async Task<bool> WaitForStatusChange(IConsole console, Configuration configuration, string successStatus, params string[] loopStatuses)
     {
         var currentStatus = loopStatuses[0];
@@ -150,6 +187,9 @@ internal static class AwsCloudFormationService
             TemplateBody = GetTemplateBody(options.Template),
             Parameters = GetParameters(options.Parameters)
         };
+            
+        LogParameters(console, request.Parameters);
+        LogTemplateBody(console, request.TemplateBody);
 
         var response = await Client.CreateStackAsync(request);
             
@@ -159,6 +199,27 @@ internal static class AwsCloudFormationService
         }
             
         return await WaitForStatusChange(console, options.Configuration, "CREATE_COMPLETE", "CREATE_IN_PROGRESS");
+    }
+
+    private static async Task<bool> CreateStackWithChangeSet(IConsole console, DeployOptions options)
+    {
+        var request = new CreateChangeSetRequest
+        {
+            ChangeSetType = ChangeSetType.CREATE,
+            ChangeSetName = GenerateChangeSetName(),
+            StackName = GetStackName(options.Configuration.TemplateOptions),
+            Capabilities = GetCapabilities(options.Configuration.TemplateOptions),
+            Tags = GetTags(options.Configuration.TemplateOptions),
+            TemplateBody = GetTemplateBody(options.Template),
+            Parameters = GetParameters(options.Parameters)
+        };
+            
+        LogParameters(console, request.Parameters);
+        LogTemplateBody(console, request.TemplateBody);
+
+        var response = await Client.CreateChangeSetAsync(request);
+
+        return response.HttpStatusCode == HttpStatusCode.OK;
     }
 
     private static async Task<bool> UpdateStack(IConsole console, Stack stack, DeployOptions options)
@@ -175,21 +236,9 @@ internal static class AwsCloudFormationService
                     ? GetParameters(options.Parameters, stack)
                     : GetParameters(options.Parameters)
             };
-                
-            console.Out.WriteLine("Parameters:");
-                
-            foreach (var parameter in request.Parameters)
-            {
-                console.Out.WriteLine(parameter.UsePreviousValue
-                    ? $"{parameter.ParameterKey} = (Use Previous Value)"
-                    : $"{parameter.ParameterKey} = {parameter.ParameterValue}");
-            }
-
-            console.Out.WriteLine();
-                
-            console.Out.WriteLine("Template Body:");
-                
-            console.Out.WriteLine(request.TemplateBody);
+            
+            LogParameters(console, request.Parameters);
+            LogTemplateBody(console, request.TemplateBody);
 
             var response = await Client.UpdateStackAsync(request);
 
@@ -199,6 +248,38 @@ internal static class AwsCloudFormationService
             }
 
             return await WaitForStatusChange(console, options.Configuration, "UPDATE_COMPLETE", "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS");
+        }
+        catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
+        {
+            console.Out.WriteLine("No updates are to be performed.");
+                
+            return true;
+        }
+    }
+
+    private static async Task<bool> UpdateStackWithChangeSet(IConsole console, Stack stack, DeployOptions options)
+    {
+        try
+        {
+            var request = new CreateChangeSetRequest
+            {
+                ChangeSetType = ChangeSetType.UPDATE,
+                ChangeSetName = GenerateChangeSetName(),
+                StackName = GetStackName(options.Configuration.TemplateOptions),
+                Capabilities = GetCapabilities(options.Configuration.TemplateOptions),
+                Tags = GetTags(options.Configuration.TemplateOptions),
+                TemplateBody = GetTemplateBody(options.Template),
+                Parameters = options.UsePreviousParameters
+                    ? GetParameters(options.Parameters, stack)
+                    : GetParameters(options.Parameters)
+            };
+            
+            LogParameters(console, request.Parameters);
+            LogTemplateBody(console, request.TemplateBody);
+
+            var response = await Client.CreateChangeSetAsync(request);
+
+            return response.HttpStatusCode != HttpStatusCode.OK;
         }
         catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
         {
@@ -222,6 +303,18 @@ internal static class AwsCloudFormationService
     {
         var stack = await GetStack(options.Configuration);
 
+        var useChangeSet = GetUseChangeSet(options.Configuration.TemplateOptions);
+
+        if (useChangeSet)
+        {
+            if (stack != null)
+            {
+                return await UpdateStackWithChangeSet(console, stack, options);
+            }
+            
+            return await CreateStackWithChangeSet(console, options);
+        }
+        
         if (stack != null)
         {
             return await UpdateStack(console, stack, options);

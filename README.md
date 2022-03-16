@@ -86,12 +86,14 @@ Possible Values:
 This allows you to configure special options for the deployment, which cannot be included in the template itself.
 
 #### AWS CloudFormation
+| Key          | Value                      | Default        | Description                                                    |
+|--------------|----------------------------|----------------|----------------------------------------------------------------|
+| StackName    | string                     | None, Required | The name of the CloudFormation stack.                          |
+| UseChangeSet | bool                       | `false`        | Will use CreateChangeSet instead of CreateStack or UpdateStack |
+| Capabilities | string[]                   | `[]`           | Grants certain capabilities to CloudFormation while running.   |
+| Tags         | Dictionary<string, string> | `{}`           | Adds tags to all resources that support stack-level tagging.   |
 
-- Required: `StackName` should be equivalent to `string`
-- Optional: `Capabilities` if specified should be equivalent to `string[]`
-- Optional: `Tags` if specified should be equivalent to `Dictionary<string, string>`
-
-See [CreateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateStack.html) and [UpdateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_UpdateStack.html) for more information.
+See [CreateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateStack.html),  [UpdateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_UpdateStack.html), and [CreateChangeSet](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateChangeSet.html) for more information.
 
 ---
 
