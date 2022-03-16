@@ -77,7 +77,7 @@ This is a dictionary, where the key is whatever you want it to be. You could use
 
 Possible Values:
 
-1. `"AwsCloudFormation"` - Specifies that the template is for AWS Cloud Formation
+1. `"AwsCloudFormation"` - Specifies that the template is for AWS CloudFormation
 
 ---
 
@@ -85,7 +85,7 @@ Possible Values:
 
 This allows you to configure special options for the deployment, which cannot be included in the template itself.
 
-#### AWS Cloud Formation
+#### AWS CloudFormation
 
 - Required: `StackName` should be equivalent to `string`
 - Optional: `Capabilities` if specified should be equivalent to `string[]`
@@ -99,15 +99,27 @@ See [CreateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIRefere
 
 This is the template of the deployment. For the sake of re-usability, you probably want to use `@Fn::IncludeFile` here and specify the complete template elsewhere.  More on this in the Template File Extensions.
 
-#### AWS Cloud Formation
+#### AWS Cloud ormation
 
-See [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html) for more information.
+See [User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html) for more information.
 
 ---
 
 ### Attributes
 
 This is a dictionary, where the key is a string and the value is any valid JSON. More on this in the Template File Extensions.
+
+---
+
+### PropertyMaps
+
+This is a dicitionary, where the key and value are both strings. The key is a value you can use with the `get <configuration key> <property name>` command. The command will write something to the standard output, depending on what key is requested and which template type is used.
+
+#### AWS CloudFormation
+
+For CloudFormation, the property value should be the **Export Name** of a Stack output.
+
+See [Outputs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html) for more information.
 
 ---
 
