@@ -28,9 +28,6 @@
     <None Update="Fixtures\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Fixtures\JsonElementExtensions\IncludeFile\child\empty-child.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
