@@ -5,6 +5,15 @@ namespace InfrastructureCli.Services;
 
 public static class FileService
 {
+    public static async Task<string> GetRawFile(FileInfo fileInfo)
+    {
+        await using var file = fileInfo.OpenRead();
+
+        using var streamReader = new StreamReader(file);
+
+        return await streamReader.ReadToEndAsync();
+    }
+    
     public static async Task<T> DeserializeFromFile<T>(FileInfo fileInfo)
     {
         await using var file = fileInfo.OpenRead();

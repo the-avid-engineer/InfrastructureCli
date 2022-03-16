@@ -15,6 +15,7 @@ public class JsonElementExtensionsTests
     [InlineData("GetAttributeValueDefined")]
     [InlineData("GetAttributeValueUndefined")]
     [InlineData("IncludeFile")]
+    [InlineData("IncludeRawFile")]
     [InlineData("MapElements")]
     [InlineData("MapProperties")]
     [InlineData("GetPropertyValueDefined")]
@@ -44,7 +45,8 @@ public class JsonElementExtensionsTests
         var rewriter = new ChainRewriter
         (
             ChainRewriter.Base,
-            new IncludeFileRewriter(currentPath)
+            new IncludeFileRewriter(currentPath),
+            new IncludeRawFileRewriter(currentPath)
         );
             
         var actualOutput = rewriter.Rewrite(input);
