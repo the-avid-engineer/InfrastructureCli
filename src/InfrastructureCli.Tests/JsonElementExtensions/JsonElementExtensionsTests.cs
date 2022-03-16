@@ -45,8 +45,7 @@ public class JsonElementExtensionsTests
         var rewriter = new ChainRewriter
         (
             ChainRewriter.Base,
-            new IncludeFileRewriter(currentPath),
-            new IncludeRawFileRewriter(currentPath)
+            ChainRewriter.ForCurrentPath(currentPath)
         );
             
         var actualOutput = rewriter.Rewrite(input);

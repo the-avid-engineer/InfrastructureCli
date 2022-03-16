@@ -40,8 +40,7 @@ internal class DeployCommand : CommandBase
         (
             new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
             ChainRewriter.Base,
-            new IncludeFileRewriter(arguments.ConfigurationsFileName.DirectoryName!),
-            new IncludeRawFileRewriter(arguments.ConfigurationsFileName.DirectoryName!)
+            ChainRewriter.ForCurrentPath(arguments.ConfigurationsFileName.DirectoryName!)
         );
             
         var template = rewriter.Rewrite(configuration.Template);

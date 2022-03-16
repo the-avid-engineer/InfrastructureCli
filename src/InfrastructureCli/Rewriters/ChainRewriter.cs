@@ -16,7 +16,16 @@ internal sealed class ChainRewriter : RewriterBase, IRewriter
         new SerializeRewriter(),
         new IntProductionRewriter()
     );
-        
+
+    public static IRewriter ForCurrentPath(string currentPath)
+    {
+        return new ChainRewriter
+        (
+            new IncludeFileRewriter(currentPath),
+            new IncludeRawFileRewriter(currentPath)
+        );
+    }
+
     private readonly IRewriter[] _rewriters;
 
     public ChainRewriter(params IRewriter[] rewriters)

@@ -45,7 +45,7 @@ internal sealed class IncludeFileRewriter : RewriterBase, IRewriter
 
         var augmentedRewriter = new ChainRewriter
         (
-            new IncludeFileRewriter(fileInfo.DirectoryName!),
+            ChainRewriter.ForCurrentPath(fileInfo.DirectoryName!),
             rootRewriter
         );
 
