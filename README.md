@@ -54,18 +54,41 @@ The configurations file is a JSON file which contains all the information needed
 
 ```json
 {
+    "GlobalRegionAttributes": {},
+    "GlobalAttributes": {},
     "Configurations": {
         "branch-a": {
+            "RegionAttributes": {},
+            "Attributes": {},
+            "PropertyMaps": {},
             "TemplateType": "",
             "TemplateOptions": {},
-            "Template": {},
-            "Attributes": {},
-            "PropertyMaps": {}
+            "Template": {}
         },
         "...": {}
     }
 }
 ```
+
+---
+
+## GlobalRegionAttributes
+
+This is a dictionary, where the key is the cloud-provider specific region string, and the value is a dictionary, where the key is any string and the value is any valid JSON. More on this in the Template File Extensions. These attributes apply to _all_ configurations.
+
+### AWS CloudFormation
+
+For AWS CloudFormation, example keys include:
+- `"us-east-1"`
+- `"us-east-2"`
+
+---
+
+## GlobalAttributes
+
+This is a dictionary, where the key is any string and the value is any valid JSON. More on this in the Template File Extensions. These attributes apply to _all_ configurations.
+
+---
 
 ## Configurations
 
@@ -107,9 +130,22 @@ See [User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/
 
 ---
 
+### RegionAttributes
+
+This is a dictionary, where the key is the cloud-provider specific region string, and the value is a dictionary, where the key is any string and the value is any valid JSON. More on this in the Template File Extensions. These attributes _only apply_ to the configuration in which they are defined.
+
+#### AWS CloudFormation
+
+For AWS CloudFormation, example keys include:
+- `"us-east-1"`
+- `"us-east-2"`
+
+
+---
+
 ### Attributes
 
-This is a dictionary, where the key is a string and the value is any valid JSON. More on this in the Template File Extensions.
+This is a dictionary, where the key is any string and the value is any valid JSON. More on this in the Template File Extensions. These attributes _only apply_ to the configuration in which they are defined.
 
 ---
 
