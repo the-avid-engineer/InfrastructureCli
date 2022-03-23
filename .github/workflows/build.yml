@@ -6,7 +6,9 @@ on:
       - '**'
     paths:
       - '.github/workflows/build.yml'
+      - 'InfrastructureCli.sln'
       - 'src/**'
+      - 'test/**'
 
 name: Build
 

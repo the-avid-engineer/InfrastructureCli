@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\InfrastructureCli\InfrastructureCli.csproj" />
+    <ProjectReference Include="..\..\src\InfrastructureCli\InfrastructureCli.csproj" />
   </ItemGroup>
 
   <ItemGroup>

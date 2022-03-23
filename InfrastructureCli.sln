@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31004.235
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfrastructureCli", "InfrastructureCli\InfrastructureCli.csproj", "{3688BD32-74B7-4314-B189-1B8B3306E142}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfrastructureCli", "src\InfrastructureCli\InfrastructureCli.csproj", "{3688BD32-74B7-4314-B189-1B8B3306E142}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfrastructureCli.Tests", "InfrastructureCli.Tests\InfrastructureCli.Tests.csproj", "{31FCCEB7-C59B-44C5-892B-C2FC7F59D31A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfrastructureCli.Tests", "test\InfrastructureCli.Tests\InfrastructureCli.Tests.csproj", "{31FCCEB7-C59B-44C5-892B-C2FC7F59D31A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfrastructureCli.Interactive", "InfrastructureCli.Interactive\InfrastructureCli.Interactive.csproj", "{06DA32A6-6FA8-451F-BE6F-5A0E12D4F0D5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfrastructureCli.Interactive", "src\InfrastructureCli.Interactive\InfrastructureCli.Interactive.csproj", "{06DA32A6-6FA8-451F-BE6F-5A0E12D4F0D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
