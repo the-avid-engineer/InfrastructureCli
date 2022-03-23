@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Amazon.Runtime;
 using InfrastructureCli.Models;
 
 namespace InfrastructureCli.Services;
@@ -297,6 +298,11 @@ internal static class AwsCloudFormationService
             .Outputs
             .SingleOrDefault(output => output.ExportName == options.PropertyName)?
             .OutputValue;
+    }
+
+    public static string GetRegion()
+    {
+        return FallbackRegionFactory.GetRegionEndpoint().SystemName;
     }
         
     public static async Task<bool> Deploy(IConsole console, DeployOptions options)

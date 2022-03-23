@@ -4,6 +4,7 @@ using System.CommandLine;
 using System.CommandLine.IO;
 using System.CommandLine.NamingConventionBinder;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using InfrastructureCli.Models;
@@ -36,12 +37,31 @@ internal class DeployCommand : CommandBase
             return 1;
         }
 
-        var rewriter = new ChainRewriter
-        (
-            new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
+        var rewriters = new List<IRewriter>
+        {
+            ChainRewriter.ForCurrentPath(arguments.ConfigurationsFileName.DirectoryName!),
             ChainRewriter.Base,
-            ChainRewriter.ForCurrentPath(arguments.ConfigurationsFileName.DirectoryName!)
-        );
+            new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
+            new GetAttributeValueRewriter<JsonElement>(configurationsFile.GlobalAttributes)
+        };
+
+        var region = configuration.TemplateType switch
+        {
+            TemplateType.AwsCloudFormation => AwsCloudFormationService.GetRegion(),
+            _ => throw new NotSupportedException()
+        };
+
+        if (configuration.RegionAttributes.TryGetValue(region, out var regionAttributes))
+        {
+            rewriters.Add(new GetAttributeValueRewriter<JsonElement>(regionAttributes));
+        }
+        
+        if (configurationsFile.GlobalRegionAttributes.TryGetValue(region, out var globalRegionAttributes))
+        {
+            rewriters.Add(new GetAttributeValueRewriter<JsonElement>(globalRegionAttributes));
+        }
+
+        var rewriter = new ChainRewriter(Enumerable.Reverse(rewriters).ToArray());
             
         var template = rewriter.Rewrite(configuration.Template);
 
@@ -63,7 +83,7 @@ internal class DeployCommand : CommandBase
         var success = configuration.TemplateType switch
         {
             TemplateType.AwsCloudFormation => await AwsCloudFormationService.Deploy(arguments.Console, deployOptions),
-            _ => throw new NotImplementedException()
+            _ => throw new NotSupportedException()
         };
 
         return success ? 0 : 2;

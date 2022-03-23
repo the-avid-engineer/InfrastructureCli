@@ -39,7 +39,7 @@ internal class GetCommand : CommandBase
         var propertyValue = configuration.TemplateType switch
         {
             TemplateType.AwsCloudFormation => await AwsCloudFormationService.Get(getOptions),
-            _ => throw new NotImplementedException()
+            _ => throw new NotSupportedException()
         };
             
         if (propertyValue == default)
