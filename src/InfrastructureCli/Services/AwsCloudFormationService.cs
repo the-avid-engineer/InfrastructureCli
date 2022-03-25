@@ -29,6 +29,17 @@ internal static class AwsCloudFormationService
         "CREATE_IN_PROGRESS"
     };
 
+    private static readonly string[] WaitToBeginUpdateStatuses =
+    {
+        "CREATE_IN_PROGRESS",
+        "REVIEW_IN_PROGRESS",
+        "ROLLBACK_IN_PROGRESS",
+        "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
+        "UPDATE_IN_PROGRESS",
+        "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
+        "UPDATE_ROLLBACK_IN_PROGRESS"
+    };
+
     private const string SuccessfulUpdateStatus = "UPDATE_COMPLETE";
     
     private static readonly string[] WaitToEndUpdateStatuses =
@@ -242,6 +253,8 @@ internal static class AwsCloudFormationService
     {
         try
         {
+            await WaitForStatusChange(console, options.Configuration, null, WaitToBeginUpdateStatuses);
+            
             var request = new UpdateStackRequest
             {
                 StackName = GetStackName(options.Configuration.TemplateOptions),
