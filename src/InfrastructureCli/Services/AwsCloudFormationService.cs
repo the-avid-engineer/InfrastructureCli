@@ -179,7 +179,7 @@ internal static class AwsCloudFormationService
         return $"on--{dateTime:yyyy-M-d}--at--{dateTime:h-mm-ss-tt}--{guid}";
     }
     
-    private static async Task<bool> WaitForStatusChange(IConsole console, Configuration configuration, string successStatus, params string[] loopStatuses)
+    private static async Task<bool> WaitForStatusChange(IConsole console, Configuration configuration, string? successStatus, params string[] loopStatuses)
     {
         var currentStatus = loopStatuses[0];
             
