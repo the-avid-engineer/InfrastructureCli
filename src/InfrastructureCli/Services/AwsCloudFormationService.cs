@@ -21,7 +21,33 @@ internal static class AwsCloudFormationService
         {
         }
     }
-        
+    
+    private const string SuccessfulCreateStatus = "CREATE_COMPLETE";
+
+    private static readonly string[] WaitToEndCreateStatuses =
+    {
+        "CREATE_IN_PROGRESS"
+    };
+
+    private static readonly string[] WaitToBeginUpdateStatuses =
+    {
+        "CREATE_IN_PROGRESS",
+        "REVIEW_IN_PROGRESS",
+        "ROLLBACK_IN_PROGRESS",
+        "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
+        "UPDATE_IN_PROGRESS",
+        "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
+        "UPDATE_ROLLBACK_IN_PROGRESS"
+    };
+
+    private const string SuccessfulUpdateStatus = "UPDATE_COMPLETE";
+    
+    private static readonly string[] WaitToEndUpdateStatuses =
+    {
+        "UPDATE_IN_PROGRESS",
+        "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"
+    };    
+    
     private static readonly IAmazonCloudFormation Client = new AmazonCloudFormationClient();
 
     private static Parameter GetParameter(KeyValuePair<string, string> parameter)
@@ -153,7 +179,7 @@ internal static class AwsCloudFormationService
         return $"on--{dateTime:yyyy-M-d}--at--{dateTime:h-mm-ss-tt}--{guid}";
     }
     
-    private static async Task<bool> WaitForStatusChange(IConsole console, Configuration configuration, string successStatus, params string[] loopStatuses)
+    private static async Task<bool> WaitForStatusChange(IConsole console, Configuration configuration, string? successStatus, params string[] loopStatuses)
     {
         var currentStatus = loopStatuses[0];
             
@@ -199,7 +225,7 @@ internal static class AwsCloudFormationService
             return false;
         }
             
-        return await WaitForStatusChange(console, options.Configuration, "CREATE_COMPLETE", "CREATE_IN_PROGRESS");
+        return await WaitForStatusChange(console, options.Configuration, SuccessfulCreateStatus, WaitToEndCreateStatuses);
     }
 
     private static async Task<bool> CreateStackWithChangeSet(IConsole console, DeployOptions options)
@@ -227,6 +253,8 @@ internal static class AwsCloudFormationService
     {
         try
         {
+            await WaitForStatusChange(console, options.Configuration, null, WaitToBeginUpdateStatuses);
+            
             var request = new UpdateStackRequest
             {
                 StackName = GetStackName(options.Configuration.TemplateOptions),
@@ -248,7 +276,7 @@ internal static class AwsCloudFormationService
                 return false;
             }
 
-            return await WaitForStatusChange(console, options.Configuration, "UPDATE_COMPLETE", "UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS");
+            return await WaitForStatusChange(console, options.Configuration, SuccessfulUpdateStatus, WaitToEndUpdateStatuses);
         }
         catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
         {
