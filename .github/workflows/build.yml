@@ -24,7 +24,7 @@ jobs:
       - name: Restore Dependencies
         run: dotnet restore InfrastructureCli.sln --locked-mode
       - name: Run Project Tests
-        run: dotnet test InfrastructureCli.sln --no-restore -c Debug --collect:"XPlat Code Coverage" -r ./TestResults -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+        run: dotnet test InfrastructureCli.sln -f net6.0 --no-restore -c Debug --collect:"XPlat Code Coverage" -r ./TestResults -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - name: Publish Coverage Results
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
