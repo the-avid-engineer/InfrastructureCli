@@ -33,7 +33,7 @@ internal class GetCommand : CommandBase
         var getOptions = new GetOptions
         (
             configuration,
-            configuration.PropertyMaps.GetValueOrDefault(arguments.PropertyName, arguments.PropertyName)
+            configuration.PropertyMaps.GetValueOrDefault(arguments.PropertyName, arguments.PropertyName)!
         );
             
         var propertyValue = configuration.TemplateType switch
