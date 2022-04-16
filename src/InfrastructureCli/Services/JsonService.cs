@@ -12,13 +12,7 @@ public static class JsonService
     {
         WriteIndented = true,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        
-        #if NETCOREAPP3_1
-        IgnoreNullValues = true,
-        #else
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        #endif
-        
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,        
         Converters =
         {
             new JsonStringEnumConverter()
