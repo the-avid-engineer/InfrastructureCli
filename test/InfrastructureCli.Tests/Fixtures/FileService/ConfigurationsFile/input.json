@@ -1,0 +1,30 @@
+{
+  "GlobalRegionAttributes": {
+    "a": {
+      "b": "c"
+    }
+  },
+  "GlobalAttributes": {
+    "d": "e"
+  },
+  "Configurations": {
+    "test": {
+      "RegionAttributes": {
+        "f": {
+          "g": "h"
+        }
+      },
+      "Attributes": {
+        "i": "j"
+      },
+      "PropertyMap": {
+        "k": "l"
+      },
+      "TemplateType": "AwsCloudFormation",
+      "TemplateOptions": {
+        "o": "p"
+      },
+      "Template": "q"
+    }
+  }
+}
