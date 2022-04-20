@@ -8,7 +8,7 @@ using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Commands;
 
-internal class CanDeployCommand : CommandBase
+internal record CanDeployCommand : CommandBase
 {
     private record Arguments
     (

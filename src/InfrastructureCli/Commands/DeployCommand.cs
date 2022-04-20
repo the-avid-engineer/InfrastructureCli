@@ -14,7 +14,7 @@ using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Commands;
 
-internal class DeployCommand : CommandBase
+internal record DeployCommand(IValidateConfigurationsFile? ValidateConfigurationsFile) : CommandBase
 {
     private record Arguments
     (
@@ -26,10 +26,20 @@ internal class DeployCommand : CommandBase
         FileInfo? FinalTemplateFileName
     );
         
-    private static async Task<int> Execute(Arguments arguments)
+    private async Task<int> Execute(Arguments arguments)
     {
         var configurationsFile = await FileService.DeserializeFromFile<ConfigurationsFile>(arguments.ConfigurationsFileName);
 
+        if (ValidateConfigurationsFile != null)
+        {
+            var valid = await ValidateConfigurationsFile.Validate(arguments.ConfigurationKey, configurationsFile);
+
+            if (!valid)
+            {
+                return 3;
+            }
+        }
+        
         var configuration = configurationsFile.Configurations.GetValueOrDefault(arguments.ConfigurationKey);
 
         if (configuration == default)
@@ -123,11 +133,11 @@ internal class DeployCommand : CommandBase
         parentCommand.AddOption(finalTemplateFileName);
     }
 
-    public static void Attach(RootCommand rootCommand)
+    public static void Attach(RootCommand rootCommand, IValidateConfigurationsFile? validateConfigurationsFile)
     {
         var deployCommand = new Command("deploy")
         {
-            Handler = CommandHandler.Create<Arguments>(Execute),
+            Handler = CommandHandler.Create<Arguments>(new DeployCommand(validateConfigurationsFile).Execute),
             Description = "Deploy the configuration to its appropriate service."
         };
 

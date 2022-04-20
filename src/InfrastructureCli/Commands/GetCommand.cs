@@ -9,7 +9,7 @@ using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Commands;
 
-internal class GetCommand : CommandBase
+internal record GetCommand : CommandBase
 {
     private record Arguments
     (

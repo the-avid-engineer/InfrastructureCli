@@ -8,6 +8,6 @@ public static class Program
 {
     public static Task<int> Main()
     {
-        return new ProgramCommand(Array.Empty<IGenerateCommand>()).Invoke(new[]{"interactive"});
+        return new ProgramCommand(new ProgramCommandOptions(Array.Empty<IGenerateCommand>())).Invoke(new[]{"interactive"});
     }
 }

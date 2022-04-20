@@ -3,7 +3,7 @@ using System.CommandLine;
 
 namespace InfrastructureCli.Commands;
 
-internal class NewCommand : CommandBase
+internal record NewCommand : CommandBase
 {
     public static void Attach(RootCommand rootCommand, IEnumerable<IGenerateCommand> generateCommands)
     {

@@ -13,11 +13,11 @@ using InfrastructureCli.Models;
 
 namespace InfrastructureCli.Services;
 
-internal static class AwsCloudFormationService
+public static class AwsCloudFormationService
 {
     private class AwsCloudFormationException : Exception
     {
-        public AwsCloudFormationException(string message) : base(message)
+        internal AwsCloudFormationException(string message) : base(message)
         {
         }
     }
@@ -77,7 +77,7 @@ internal static class AwsCloudFormationService
         };
     }
 
-    private static string GetStackName(IReadOnlyDictionary<string, JsonElement> templateOptions)
+    public static string GetStackName(IReadOnlyDictionary<string, JsonElement> templateOptions)
     {
         return templateOptions.TryGetValue("StackName", out var stackNameElement)
             ? JsonService.Convert<JsonElement, string>(stackNameElement)
@@ -318,7 +318,7 @@ internal static class AwsCloudFormationService
         }
     }
 
-    public static async Task<string?> Get(GetOptions options)
+    internal static async Task<string?> Get(GetOptions options)
     {
         var stack = await GetStack(options.Configuration);
 
@@ -328,12 +328,12 @@ internal static class AwsCloudFormationService
             .OutputValue;
     }
 
-    public static string GetRegion()
+    internal static string GetRegion()
     {
         return FallbackRegionFactory.GetRegionEndpoint().SystemName;
     }
         
-    public static async Task<bool> Deploy(IConsole console, DeployOptions options)
+    internal static async Task<bool> Deploy(IConsole console, DeployOptions options)
     {
         var stack = await GetStack(options.Configuration);
 

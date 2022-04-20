@@ -4,7 +4,7 @@ using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Commands;
 
-internal abstract class CommandBase
+internal abstract record CommandBase
 {
     protected static void AttachConfigurationKeyArgument(Command parentCommand)
     {
