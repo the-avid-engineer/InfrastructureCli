@@ -1,3 +1,10 @@
 {
-  "@Fn::IncludeRawFile": ["file.txt"]
+  "@Fn::UsingAttributes": [
+    {
+      "AnAttribute": "An Attribute"
+    },
+    {
+      "@Fn::IncludeRawFile": ["file.txt"]
+    }
+  ]
 }
