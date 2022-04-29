@@ -43,8 +43,6 @@ internal sealed class IncludeRawFileRewriter : RewriterBase, IRewriter
 
         var rawFile = FileService.GetRawFile(fileInfo).Result;
 
-        var rawFileAsJsonString = JsonService.Convert<string, JsonElement>(rawFile);
-
-        return rootRewriter.Rewrite(rawFileAsJsonString);
+        return JsonService.Convert<string, JsonElement>(rawFile);
     }
 }
