@@ -43,9 +43,9 @@ internal sealed class IncludeFileRewriter : RewriterBase, IRewriter
 
         var newJsonElement = FileService.DeserializeFromFile<JsonElement>(fileInfo).Result;
 
-        var augmentedRewriter = new ChainRewriter
+        var augmentedRewriter = new BottomUpChainRewriter
         (
-            ChainRewriter.ForCurrentPath(fileInfo.DirectoryName!),
+            BottomUpChainRewriter.ForCurrentPath(fileInfo.DirectoryName!),
             rootRewriter
         );
 

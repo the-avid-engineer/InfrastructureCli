@@ -35,7 +35,7 @@ internal sealed class MapElementsRewriter : RewriterBase, IRewriter
                     ["ElementValue"] = childJsonElements[i]
                 };
 
-                var augmentedRewriter = new ChainRewriter
+                var augmentedRewriter = new BottomUpChainRewriter
                 (
                     new GetAttributeValueRewriter<dynamic>(attributes),
                     rootRewriter

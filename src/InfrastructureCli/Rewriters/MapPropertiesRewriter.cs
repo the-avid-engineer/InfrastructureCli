@@ -30,7 +30,7 @@ internal sealed class MapPropertiesRewriter : RewriterBase, IRewriter
                     ["PropertyValue"] = childJsonProperty.Value
                 };
 
-                var augmentedRewriter = new ChainRewriter
+                var augmentedRewriter = new BottomUpChainRewriter
                 (
                     new GetAttributeValueRewriter<dynamic>(attributes),
                     rootRewriter

@@ -42,10 +42,10 @@ public class JsonElementExtensionsTests
 
         // ACT
 
-        var rewriter = new ChainRewriter
+        var rewriter = new BottomUpChainRewriter
         (
-            ChainRewriter.Base,
-            ChainRewriter.ForCurrentPath(currentPath)
+            BottomUpChainRewriter.Base,
+            BottomUpChainRewriter.ForCurrentPath(currentPath)
         );
             
         var actualOutput = rewriter.Rewrite(input);

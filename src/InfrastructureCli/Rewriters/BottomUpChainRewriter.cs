@@ -1,11 +1,12 @@
+using System;
 using System.Linq;
 using System.Text.Json;
 
 namespace InfrastructureCli.Rewriters;
 
-internal sealed class ChainRewriter : RewriterBase, IRewriter
+internal sealed class BottomUpChainRewriter : RewriterBase, IRewriter
 {
-    public static readonly IRewriter Base = new ChainRewriter
+    public static readonly IRewriter Base = new BottomUpChainRewriter
     (
         new MapElementsRewriter(),
         new MapPropertiesRewriter(),
@@ -19,7 +20,7 @@ internal sealed class ChainRewriter : RewriterBase, IRewriter
 
     public static IRewriter ForCurrentPath(string currentPath)
     {
-        return new ChainRewriter
+        return new BottomUpChainRewriter
         (
             new IncludeFileRewriter(currentPath),
             new IncludeRawFileRewriter(currentPath)
@@ -28,7 +29,7 @@ internal sealed class ChainRewriter : RewriterBase, IRewriter
 
     private readonly IRewriter[] _rewriters;
 
-    public ChainRewriter(params IRewriter[] rewriters)
+    public BottomUpChainRewriter(params IRewriter[] rewriters)
     {
         _rewriters = rewriters;
     }
@@ -37,8 +38,8 @@ internal sealed class ChainRewriter : RewriterBase, IRewriter
     {
         jsonElement = jsonElement.ValueKind switch
         {
-            JsonValueKind.Object => RewriteObject(jsonElement),
-            JsonValueKind.Array => RewriteArray(jsonElement),
+            JsonValueKind.Object => RewriteObject(jsonElement, rootRewriter),
+            JsonValueKind.Array => RewriteArray(jsonElement, rootRewriter),
             _ => jsonElement
         };
 
@@ -46,7 +47,7 @@ internal sealed class ChainRewriter : RewriterBase, IRewriter
             .Aggregate(jsonElement, (currentJsonElement, rewriter) => rewriter.Rewrite(currentJsonElement, rootRewriter));
     }
         
-    private JsonElement RewriteObject(JsonElement jsonObject)
+    private JsonElement RewriteObject(JsonElement jsonObject, IRewriter rootRewriter)
     {
         return BuildJsonElement(jsonWriter =>
         {
@@ -56,14 +57,14 @@ internal sealed class ChainRewriter : RewriterBase, IRewriter
             {
                 jsonWriter.WritePropertyName(jsonProperty.Name);
                     
-                Rewrite(jsonProperty.Value, this).WriteTo(jsonWriter);
+                Rewrite(jsonProperty.Value, rootRewriter).WriteTo(jsonWriter);
             }
 
             jsonWriter.WriteEndObject();
         });
     }
         
-    private JsonElement RewriteArray(JsonElement jsonArray)
+    private JsonElement RewriteArray(JsonElement jsonArray, IRewriter rootRewriter)
     {
         return BuildJsonElement(jsonWriter =>
         {
@@ -71,7 +72,7 @@ internal sealed class ChainRewriter : RewriterBase, IRewriter
 
             foreach (var jsonElement in jsonArray.EnumerateArray())
             {
-                Rewrite(jsonElement, this).WriteTo(jsonWriter);
+                Rewrite(jsonElement, rootRewriter).WriteTo(jsonWriter);
             }
 
             jsonWriter.WriteEndArray();

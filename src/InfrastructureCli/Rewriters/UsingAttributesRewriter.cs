@@ -21,7 +21,7 @@ internal class UsingAttributesRewriter : RewriterBase, IRewriter
             
         var templateJsonElement = argumentsElement[1];
             
-        var augmentedRewriter = new ChainRewriter
+        var augmentedRewriter = new BottomUpChainRewriter
         (
             new GetAttributeValueRewriter<JsonElement>(attributes),
             rootRewriter

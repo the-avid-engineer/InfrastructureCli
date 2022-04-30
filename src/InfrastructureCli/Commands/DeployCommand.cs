@@ -47,10 +47,10 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
             return 1;
         }
 
-        var rewriters = new List<IRewriter>
+        var bottomUpRewriters = new List<IRewriter>
         {
-            ChainRewriter.ForCurrentPath(arguments.ConfigurationsFileName.DirectoryName!),
-            ChainRewriter.Base,
+            BottomUpChainRewriter.ForCurrentPath(arguments.ConfigurationsFileName.DirectoryName!),
+            BottomUpChainRewriter.Base,
             new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
             new GetAttributeValueRewriter<JsonElement>(configurationsFile.GlobalAttributes)
         };
@@ -63,15 +63,15 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
 
         if (configuration.RegionAttributes.TryGetValue(region, out var regionAttributes))
         {
-            rewriters.Add(new GetAttributeValueRewriter<JsonElement>(regionAttributes));
+            bottomUpRewriters.Add(new GetAttributeValueRewriter<JsonElement>(regionAttributes));
         }
         
         if (configurationsFile.GlobalRegionAttributes.TryGetValue(region, out var globalRegionAttributes))
         {
-            rewriters.Add(new GetAttributeValueRewriter<JsonElement>(globalRegionAttributes));
+            bottomUpRewriters.Add(new GetAttributeValueRewriter<JsonElement>(globalRegionAttributes));
         }
 
-        var rewriter = new ChainRewriter(Enumerable.Reverse(rewriters).ToArray());
+        var rewriter = new BottomUpChainRewriter(Enumerable.Reverse(bottomUpRewriters).ToArray());
             
         var template = rewriter.Rewrite(configuration.Template);
 
