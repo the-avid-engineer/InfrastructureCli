@@ -1,10 +1,19 @@
 {
-  "@Fn::UsingAttributes": [
+  "@Fn::UsingMacros": [
     {
-      "AnAttribute": "An Attribute"
+      "IncludeTxtFile": {
+        "@Fn::IncludeRawFile": ["file.txt"]
+      }
     },
     {
-      "@Fn::IncludeRawFile": ["file.txt"]
+      "@Fn::UsingAttributes": [
+        {
+          "AnAttribute": "An Attribute"
+        },
+        {
+          "@Fn::GetMacro": "IncludeTxtFile"
+        }
+      ]
     }
   ]
 }

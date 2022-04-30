@@ -25,6 +25,8 @@ public class JsonElementExtensionsTests
     [InlineData("Serialize")]
     [InlineData("IntProduct")]
     [InlineData("Precedence")]
+    [InlineData("GetMacroDefined")]
+    [InlineData("GetMacroUndefined")]
     public async Task RewriteFixtureTests(string fixtureName)
     {
         // ARRANGE
@@ -42,10 +44,14 @@ public class JsonElementExtensionsTests
 
         // ACT
 
-        var rewriter = new BottomUpChainRewriter
+        var rewriter = new TopDownChainRewriter
         (
-            BottomUpChainRewriter.Base,
-            BottomUpChainRewriter.ForCurrentPath(currentPath)
+            TopDownChainRewriter.Base,
+            new BottomUpChainRewriter
+            (
+                BottomUpChainRewriter.Base,
+                BottomUpChainRewriter.ForCurrentPath(currentPath)
+            )
         );
             
         var actualOutput = rewriter.Rewrite(input);

@@ -71,7 +71,11 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
             bottomUpRewriters.Add(new GetAttributeValueRewriter<JsonElement>(globalRegionAttributes));
         }
 
-        var rewriter = new BottomUpChainRewriter(Enumerable.Reverse(bottomUpRewriters).ToArray());
+        var rewriter = new TopDownChainRewriter
+        (
+            TopDownChainRewriter.Base,
+            new BottomUpChainRewriter(Enumerable.Reverse(bottomUpRewriters).ToArray())
+        );
             
         var template = rewriter.Rewrite(configuration.Template);
 

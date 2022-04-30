@@ -1,0 +1,17 @@
+{
+  "@Fn::UsingMacros": [
+    {
+      "KnownMacro": "@{InnerAttribute}"
+    },
+    {
+      "@Fn::UsingAttributes": [
+        {
+          "InnerAttribute": "InnerAttribute"
+        },
+        {
+          "@Fn::GetMacro": "KnownMacro"
+        }
+      ]
+    }
+  ]
+}

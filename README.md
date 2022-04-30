@@ -163,9 +163,81 @@ See [Outputs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/out
 
 ## Template File Extensions
 
-The template file is a JSON file which codifies the infrastructure. The template file is passed through a rewriter which will re-write the structure, and allows you to do some basic programming in JSON format. Functions are listed in order of precedence, and the template is processed bottom-up.
+The template file is a JSON file which codifies the infrastructure. The template file is passed through a rewriter which will re-write the structure, and allows you to do some basic programming in JSON format. Functions are listed in order of precedence.
 
-### @Fn::GetAttributeValue (Explicit)
+### Top-Down
+
+The following functions are evaluated first, and run through the tree top-down.
+
+#### @Fn::UsingMacros
+
+An object with a single key of `@Fn::UsingMacros` and a value of an array with two elements, the first being an inner object and the second being anything, is recognized by this rewriter. Each property of the first element, the inner object, can be retrieved by using a corresponding `@Fn::GetMacro` function in the second element of the array.
+
+For example:
+
+```json
+{
+  "@Fn::UsingMacros": [
+    {
+      "MyMacro": "@{MyAttribute}"
+    },
+    {
+      "@Fn::UsingAttributes": [
+        {
+          "MyAttribute": "My Attribute Value"
+        },
+        {
+          "@Fn::GetMacro": "MyMacro"
+        }
+      ]
+    }
+  ]
+]
+```
+
+Would be rewritten as:
+
+```json
+"My Attribute Value"
+```
+
+You will note that this would **not** work if you replaced `@Fn::UsingMacros` with `@Fn::UsingAttributes` and `@Fn::GetMacro` with `@Fn::GetAttributeValue` because attributes are processed bottom-up, where as macros are processed top-down; the output would be `"@{MyAttributeValue}"`
+
+#### @Fn::GetMacro
+
+An object with a single key of `@Fn::GetMacro` and a value of a string is recognized by this macro. Macros defined higher in the template can be accessed with this rewriter.
+
+For example:
+
+```json
+{
+  "@Fn::GetMacro": "IncludeSomeFile"
+}
+```
+
+Would be rewritten as:
+
+```json
+{
+  "@Fn::IncludeRawFile": ["myfile.txt"]
+}
+```
+
+Assuming a macro higher in the template is defined with this as the first argument:
+
+```json
+{
+  "IncludeSomeFile": {
+    "@Fn::IncludeRawFile": ["myfile.txt"]
+  }
+}
+```
+
+### Bottom-Up
+
+The following functions are evaluated last, and run through the tree bottom-up.
+
+#### @Fn::GetAttributeValue (Explicit)
 
 Attributes from the deployment configuration can be accessed with this rewriter. An object with a single key of `@Fn::GetAttributeValue` and a value of a string is recognized by this rewriter.
 
@@ -199,7 +271,7 @@ Assuming that the configuration's attributes looks like this:
 
 Note, you are not restricted to using strings for attribute values. Any valid JSON is allowed.
 
-### @Fn::GetAttributeValue (Implicit)
+#### @Fn::GetAttributeValue (Implicit)
 
 For any attribute, consider the key of the attribute. If any occurence of `@{<key>}` occurs in the template, it will be rewritten with the string value of the attribute. (Note that this token is not valid JSON outside of a string, so it may only be used inside a string; that includes property key strings!)
 
@@ -221,9 +293,9 @@ Would be rewritten as:
 }
 ```
 
-WARNING: Due to the template being processed bottom-up, you should not rely on the output of this function (the implicit version) as an argument in another function call (e.g., `@Fn::IncludeFile`) because that dependent function _might_ evaluate before the attribute value is available. In these cases, it is advised to use the explicit function. 
+WARNING: Due to the this function being processed bottom-up, you should not rely on the output of this function (the implicit version) as an argument in another function call (e.g., `@Fn::IncludeFile`) because that dependent function _might_ evaluate before the attribute value is available. In these cases, it is advised to use the explicit function. 
 
-### @Fn::MapElements
+#### @Fn::MapElements
 
 An object with a single key of `@Fn::MapElements` and a value of an array with two elements, the first being an array of anything and the second being anything, is recognized by this rewriter. Each element of the first element, the array, is mapped to the second element. In addition to any attributes already present, you may use the following attributes as well:
 
@@ -283,7 +355,7 @@ Would be rewritten as:
 }
 ````
 
-### @Fn::MapProperties
+#### @Fn::MapProperties
 
 An object with a single key of `@Fn::MapProperties` and a value of an array with two elements, the first being an inner object and the second being anything, is recognized by this rewriter. Each propert of the first element, the inner object, is mapped to the second element (The output of this rewriter is an array, not an object). In addition to any attributes already present, you may use the following attributes as well:
 
@@ -347,7 +419,7 @@ Would be rewritten as:
 }
 ```
 
-### @Fn::UsingAttributes
+#### @Fn::UsingAttributes
 
 An object with a single key of `@Fn::UsingAttributes` and a value of an array with two elements, the first being an object and the second being anything, is recognized by this rewriter. Each property of the first element of the array can be retrieved by using a corresponding `@Fn::GetAttributeValue` function in the second element of the array.
 
@@ -377,7 +449,7 @@ Would be rewritten as:
 ```
 
 
-### @Fn::GetPropertyValue
+#### @Fn::GetPropertyValue
 
 An outer object with a single key of `@Fn::GetPropertyValue` and a value of an array with two elements, the first being an inner object and the second being a string, is recognized by this rewriter. The second element of the array, the string, is treated as a key of the first element of the array, the inner object, and the outer object is rewritten with the value of the inner object for that key.
 
@@ -405,7 +477,7 @@ Would be rewritten as:
 }
 ```
 
-### @Fn::SpreadElements
+#### @Fn::SpreadElements
 
 An object with a single key of `@Fn::SpreadElements` and a value of an array of arrays is recognized by this rewritter. All of the arrays within the array will be combined into a single array.
 
@@ -441,7 +513,7 @@ Would be rewritten as:
 ]
 ```
 
-### @Fn::SpreadProperties
+#### @Fn::SpreadProperties
 
 An object with a single key of `@Fn::SpreadProperties` and a value of an array of arrays is recognized by this rewritter. All of the objects within the array will be combined into a single object.
 
@@ -477,7 +549,7 @@ Would be rewritten as:
 }
 ```
 
-### @Fn::Serialize
+#### @Fn::Serialize
 
 Sometimes you need JSON serialized inside JSON - AWS does this a lot with policies. However, writing serialized JSON inside JSON is.. ehm.. disgusting. So, this rewriter will serialize the JSON for you! An object with a key of `@Fn::Serialize` and any value is recognized by this rewritter.
 
@@ -501,7 +573,7 @@ Would be rewritten as:
 }
 ```
 
-### @Fn::IntProduct
+#### @Fn::IntProduct
 
 An object with a single key of `@Fn::IntProduct` and a value of an array of numbers is recognized by this rewriter. The output of this function is equivalent to the PI product notation in math, and will return `1` for an empty set (a.k.a., the empty product). This function is written to handle `int` numbers, and will likely throw if anything bigger is used. (It's always possible to add a `@Fn::LongProduct` in the future if bigger numbers are needed.)
 
@@ -520,7 +592,7 @@ Will be rewritten as:
 ```
 
 
-### @Fn::IncludeFile
+#### @Fn::IncludeFile
 
 If you want to split your template into components that are easier to digest/read, you may split them and recombine them using this function.
 
@@ -579,7 +651,7 @@ Would be rewritten as:
 
 ---
 
-### @Fn::IncludeRawFile
+#### @Fn::IncludeRawFile
 
 If your template needs some property with a value that is essentially a file (but not a JSON file), you can separate that value into a file and include it with this function.
 
