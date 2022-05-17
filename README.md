@@ -60,7 +60,6 @@ The configurations file is a JSON file which contains all the information needed
         "branch-a": {
             "RegionAttributes": {},
             "Attributes": {},
-            "PropertyMaps": {},
             "TemplateType": "",
             "TemplateOptions": {},
             "Template": {}
@@ -146,12 +145,6 @@ For AWS CloudFormation, example keys include:
 ### Attributes
 
 This is a dictionary, where the key is any string and the value is any valid JSON. More on this in the Template File Extensions. These attributes _only apply_ to the configuration in which they are defined.
-
----
-
-### PropertyMaps
-
-This is a dicitionary, where the key and value are both strings. The key is a value you can use with the `get <configuration key> <property name>` command. The command will write something to the standard output, depending on what key is requested and which template type is used.
 
 #### AWS CloudFormation
 
