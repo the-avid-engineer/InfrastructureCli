@@ -324,7 +324,7 @@ public static class AwsCloudFormationService
 
         return stack?
             .Outputs
-            .SingleOrDefault(output => output.ExportName == options.PropertyName)?
+            .SingleOrDefault(output => output.OutputKey == options.PropertyName)?
             .OutputValue;
     }
 

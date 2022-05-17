@@ -7,7 +7,6 @@ public record Configuration
 (
     Dictionary<string, Dictionary<string, JsonElement>> RegionAttributes,
     Dictionary<string, JsonElement> Attributes,
-    Dictionary<string, string> PropertyMaps,
     TemplateType TemplateType,
     Dictionary<string, JsonElement> TemplateOptions,
     JsonElement Template
