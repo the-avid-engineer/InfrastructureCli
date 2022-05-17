@@ -1,0 +1,12 @@
+{
+  "@Fn::UsingMacros": [
+    {
+      "MyMacro": {
+        "@Fn::IncludeRawFile": ["file.txt"]
+      }
+    },
+    {
+      "@Fn::IncludeFile": ["file.json"]
+    }
+  ]
+}

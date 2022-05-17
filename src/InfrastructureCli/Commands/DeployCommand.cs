@@ -73,6 +73,7 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
 
         var rewriter = new TopDownChainRewriter
         (
+            TopDownChainRewriter.ForCurrentPath(arguments.ConfigurationsFileName.DirectoryName!),
             TopDownChainRewriter.Base,
             new BottomUpChainRewriter(Enumerable.Reverse(bottomUpRewriters).ToArray())
         );

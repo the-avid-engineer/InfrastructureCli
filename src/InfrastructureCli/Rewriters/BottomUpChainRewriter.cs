@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 
@@ -22,8 +23,7 @@ internal sealed class BottomUpChainRewriter : RewriterBase, IRewriter
     {
         return new BottomUpChainRewriter
         (
-            new IncludeFileRewriter(currentPath),
-            new IncludeRawFileRewriter(currentPath)
+            new IncludeFileRewriter(currentPath)
         );
     }
 

@@ -162,6 +162,47 @@ The template file is a JSON file which codifies the infrastructure. The template
 
 The following functions are evaluated first, and run through the tree top-down.
 
+#### @Fn::IncludeRawFile
+
+If your template needs some property with a value that is essentially a file (but not a JSON file), you can separate that value into a file and include it with this function.
+
+File names are relative to the directory of the file in which the function is invoked.
+
+So if this is your file structure:
+
+```
+config-file.txt
+```
+
+And `config-file.txt` looks like this:
+
+```txt
+Some text configuration file with all
+sorts of "symbols" and line breaks
+```
+
+Then `/template.json`:
+
+```json
+{
+  "SomeProperty": {
+    "@Fn::IncludeRawFile": [
+      "config-file.txt"
+    ]
+  }
+}
+```
+
+Would be re-written as:
+
+```json
+{
+  "SomeProperty": "Some text configuration file with all\nsorts of \"symbols\" and line breaks"
+}
+```
+
+---
+
 #### @Fn::UsingMacros
 
 An object with a single key of `@Fn::UsingMacros` and a value of an array with two elements, the first being an inner object and the second being anything, is recognized by this rewriter. Each property of the first element, the inner object, can be retrieved by using a corresponding `@Fn::GetMacro` function in the second element of the array.
@@ -639,46 +680,5 @@ Would be rewritten as:
   "ParentProperty": {
     "Foo": "Bar"
   }
-}
-```
-
----
-
-#### @Fn::IncludeRawFile
-
-If your template needs some property with a value that is essentially a file (but not a JSON file), you can separate that value into a file and include it with this function.
-
-File names are relative to the directory of the file in which the function is invoked.
-
-So if this is your file structure:
-
-```
-config-file.txt
-```
-
-And `config-file.txt` looks like this:
-
-```txt
-Some text configuration file with all
-sorts of "symbols" and line breaks
-```
-
-Then `/template.json`:
-
-```json
-{
-  "SomeProperty": {
-    "@Fn::IncludeRawFile": [
-      "config-file.txt"
-    ]
-  }
-}
-```
-
-Would be re-written as:
-
-```json
-{
-  "SomeProperty": "Some text configuration file with all\nsorts of \"symbols\" and line breaks"
 }
 ```

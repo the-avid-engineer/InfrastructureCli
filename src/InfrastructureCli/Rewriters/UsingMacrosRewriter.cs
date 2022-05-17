@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using InfrastructureCli.Extensions;
@@ -24,7 +23,8 @@ internal class UsingMacrosRewriter : RewriterBase, IRewriter
 
         var rewriter = new TopDownChainRewriter
         (
-            new GetMacroRewriter(macros)
+            new GetMacroRewriter(macros),
+            rootRewriter
         );
             
         return rewriter.Rewrite(templateJsonElement);

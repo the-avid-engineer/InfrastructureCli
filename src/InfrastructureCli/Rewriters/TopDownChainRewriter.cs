@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 
@@ -10,6 +11,15 @@ internal sealed class TopDownChainRewriter : RewriterBase, IRewriter
     (
         new UsingMacrosRewriter()
     );
+    
+    public static IRewriter ForCurrentPath(string currentPath)
+    {
+        return new TopDownChainRewriter
+        (
+            new IncludeRawFileRewriter(currentPath)
+        );
+    }
+
 
     private readonly IRewriter[] _rewriters;
 

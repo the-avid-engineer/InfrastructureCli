@@ -1,0 +1,10 @@
+{
+  "@Fn::UsingAttributes": [
+    {
+      "MyAttribute": "My Attribute"
+    },
+    {
+      "@Fn::GetMacro": "MyMacro"
+    }
+  ]
+}
