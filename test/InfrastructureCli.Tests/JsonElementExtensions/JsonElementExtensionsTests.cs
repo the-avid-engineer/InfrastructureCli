@@ -1,7 +1,7 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using InfrastructureCli.Extensions;
 using InfrastructureCli.Rewriters;
 using InfrastructureCli.Services;
 using Shouldly;
@@ -33,7 +33,7 @@ public class JsonElementExtensionsTests
         // ARRANGE
 
         var currentPath = Path.Combine("Fixtures", "JsonElementExtensions", fixtureName);
-            
+
         var inputFileName = Path.Combine(currentPath, "input.json");
         var expectedOutputFileName = Path.Combine(currentPath, "expectedOutput.json");
 
@@ -45,18 +45,17 @@ public class JsonElementExtensionsTests
 
         // ACT
 
-        var rewriter = new TopDownChainRewriter
+        var rootRewriter = RootRewriter.Create
         (
-            TopDownChainRewriter.ForCurrentPath(currentPath),
-            TopDownChainRewriter.Base,
-            new BottomUpChainRewriter
-            (
-                BottomUpChainRewriter.Base,
-                BottomUpChainRewriter.ForCurrentPath(currentPath)
-            )
+            new(),
+            new(),
+            new(),
+            new(),
+            currentPath,
+            "us-east-1"
         );
             
-        var actualOutput = rewriter.Rewrite(input);
+        var actualOutput = rootRewriter.Rewrite(input);
 
         var formattedExpectedOutput = JsonService.Serialize(expectedOutput);
         var formattedActualOutput = JsonService.Serialize(actualOutput);

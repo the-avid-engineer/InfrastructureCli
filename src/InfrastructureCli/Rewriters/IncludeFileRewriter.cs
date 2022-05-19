@@ -1,21 +1,13 @@
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using InfrastructureCli.Extensions;
 using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Rewriters;
 
 internal sealed class IncludeFileRewriter : RewriterBase, IRewriter
 {
-    private readonly string _currentPath;
-
-    public IncludeFileRewriter(string currentPath)
-    {
-        _currentPath = currentPath;
-    }
-        
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
         if (TryGetArguments(jsonElement, "IncludeFile", out var argumentsElement) != true ||
             argumentsElement.ValueKind != JsonValueKind.Array)
@@ -34,7 +26,7 @@ internal sealed class IncludeFileRewriter : RewriterBase, IRewriter
 
         var fileNameComponents = childJsonElements
             .Select(childJsonElement => childJsonElement.GetString()!)
-            .Prepend(_currentPath)
+            .Prepend(rootRewriter.CurrentPath)
             .ToArray();
 
         var fileName = Path.Combine(fileNameComponents);
@@ -43,16 +35,8 @@ internal sealed class IncludeFileRewriter : RewriterBase, IRewriter
 
         var newJsonElement = FileService.DeserializeFromFile<JsonElement>(fileInfo).Result;
 
-        var augmentedRewriter = new TopDownChainRewriter
-        (
-            TopDownChainRewriter.ForCurrentPath(fileInfo.DirectoryName!),
-            new BottomUpChainRewriter
-            (
-                BottomUpChainRewriter.ForCurrentPath(fileInfo.DirectoryName!),
-                rootRewriter
-            )
-        );
-
-        return augmentedRewriter.Rewrite(newJsonElement);
+        return rootRewriter
+            .WithCurrentPath(fileInfo.DirectoryName!)
+            .Rewrite(newJsonElement);
     }
 }

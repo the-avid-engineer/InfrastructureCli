@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json;
-using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters;
 
 internal sealed class MapPropertiesRewriter : RewriterBase, IRewriter
 {
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
         if (TryGetArguments(jsonElement, "MapProperties", out var argumentsElement) != true ||
             argumentsElement.ValueKind != JsonValueKind.Array ||
@@ -30,13 +29,10 @@ internal sealed class MapPropertiesRewriter : RewriterBase, IRewriter
                     ["PropertyValue"] = childJsonProperty.Value
                 };
 
-                var augmentedRewriter = new BottomUpChainRewriter
-                (
-                    new GetAttributeValueRewriter<dynamic>(attributes),
-                    rootRewriter
-                );
-
-                augmentedRewriter.Rewrite(templateJsonElement).WriteTo(jsonWriter);
+                rootRewriter
+                    .PrependToBottomUp(new GetAttributeValueRewriter<dynamic>(attributes))
+                    .Rewrite(templateJsonElement)
+                    .WriteTo(jsonWriter);
             }
 
             jsonWriter.WriteEndArray();

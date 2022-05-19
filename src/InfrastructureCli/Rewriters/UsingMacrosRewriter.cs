@@ -1,12 +1,11 @@
 using System.Linq;
 using System.Text.Json;
-using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters;
 
 internal class UsingMacrosRewriter : RewriterBase, IRewriter
 {
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
         if (TryGetArguments(jsonElement, "UsingMacros", out var argumentsElement) != true ||
             argumentsElement.ValueKind != JsonValueKind.Array ||
@@ -17,16 +16,12 @@ internal class UsingMacrosRewriter : RewriterBase, IRewriter
         }
             
         var macros = childJsonProperties
-            .ToDictionary(property => property.Name, property => property.Value);
+            .ToDictionary(property => property.Name, property => rootRewriter.Rewrite(property.Value));
 
         var templateJsonElement = argumentsElement[1];
 
-        var rewriter = new TopDownChainRewriter
-        (
-            new GetMacroRewriter(macros),
-            rootRewriter
-        );
-            
-        return rewriter.Rewrite(templateJsonElement);
+        return rootRewriter
+            .PrependToTopDown(new GetMacroRewriter(macros))
+            .Rewrite(templateJsonElement);
     }
 }

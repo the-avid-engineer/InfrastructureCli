@@ -4,13 +4,10 @@ using System.CommandLine;
 using System.CommandLine.IO;
 using System.CommandLine.NamingConventionBinder;
 using System.IO;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using InfrastructureCli.Models;
 using InfrastructureCli.Rewriters;
 using InfrastructureCli.Services;
-using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Commands;
 
@@ -47,38 +44,23 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
             return 1;
         }
 
-        var bottomUpRewriters = new List<IRewriter>
-        {
-            BottomUpChainRewriter.ForCurrentPath(arguments.ConfigurationsFileName.DirectoryName!),
-            BottomUpChainRewriter.Base,
-            new GetAttributeValueRewriter<JsonElement>(configuration.Attributes),
-            new GetAttributeValueRewriter<JsonElement>(configurationsFile.GlobalAttributes)
-        };
-
         var region = configuration.TemplateType switch
         {
             TemplateType.AwsCloudFormation => AwsCloudFormationService.GetRegion(),
             _ => throw new NotSupportedException()
         };
 
-        if (configuration.RegionAttributes.TryGetValue(region, out var regionAttributes))
-        {
-            bottomUpRewriters.Add(new GetAttributeValueRewriter<JsonElement>(regionAttributes));
-        }
-        
-        if (configurationsFile.GlobalRegionAttributes.TryGetValue(region, out var globalRegionAttributes))
-        {
-            bottomUpRewriters.Add(new GetAttributeValueRewriter<JsonElement>(globalRegionAttributes));
-        }
-
-        var rewriter = new TopDownChainRewriter
+        var rootRewriter = RootRewriter.Create
         (
-            TopDownChainRewriter.ForCurrentPath(arguments.ConfigurationsFileName.DirectoryName!),
-            TopDownChainRewriter.Base,
-            new BottomUpChainRewriter(Enumerable.Reverse(bottomUpRewriters).ToArray())
+            configurationsFile.GlobalAttributes,
+            configurationsFile.GlobalRegionAttributes,
+            configuration.Attributes,
+            configuration.RegionAttributes,
+            arguments.ConfigurationsFileName.DirectoryName!,
+            region
         );
             
-        var template = rewriter.Rewrite(configuration.Template);
+        var template = rootRewriter.Rewrite(configuration.Template);
 
         if (arguments.FinalTemplateFileName != null)
         {

@@ -1,21 +1,13 @@
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using InfrastructureCli.Extensions;
 using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Rewriters;
 
 internal sealed class IncludeRawFileRewriter : RewriterBase, IRewriter
 {
-    private readonly string _currentPath;
-
-    public IncludeRawFileRewriter(string currentPath)
-    {
-        _currentPath = currentPath;
-    }
-        
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
         if (TryGetArguments(jsonElement, "IncludeRawFile", out var argumentsElement) != true ||
             argumentsElement.ValueKind != JsonValueKind.Array)
@@ -34,7 +26,7 @@ internal sealed class IncludeRawFileRewriter : RewriterBase, IRewriter
 
         var fileNameComponents = childJsonElements
             .Select(childJsonElement => childJsonElement.GetString()!)
-            .Prepend(_currentPath)
+            .Prepend(rootRewriter.CurrentPath)
             .ToArray();
 
         var fileName = Path.Combine(fileNameComponents);

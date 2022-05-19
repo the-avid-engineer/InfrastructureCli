@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json;
+using InfrastructureCli.Rewriters;
 
 namespace InfrastructureCli.Models;
 
@@ -10,4 +11,6 @@ public record Configuration
     TemplateType TemplateType,
     Dictionary<string, JsonElement> TemplateOptions,
     JsonElement Template
-);
+)
+{
+}

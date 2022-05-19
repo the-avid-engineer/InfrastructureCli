@@ -5,7 +5,7 @@ namespace InfrastructureCli.Rewriters;
 
 internal sealed class SerializeRewriter : RewriterBase, IRewriter
 {
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
         if (TryGetArguments(jsonElement, "Serialize", out var argumentsElement) != true)
         {

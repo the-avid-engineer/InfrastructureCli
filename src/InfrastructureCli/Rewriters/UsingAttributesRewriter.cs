@@ -1,12 +1,11 @@
 using System.Linq;
 using System.Text.Json;
-using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters;
 
 internal class UsingAttributesRewriter : RewriterBase, IRewriter
 {
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
         if (TryGetArguments(jsonElement, "UsingAttributes", out var argumentsElement) != true ||
             argumentsElement.ValueKind != JsonValueKind.Array ||
@@ -20,13 +19,9 @@ internal class UsingAttributesRewriter : RewriterBase, IRewriter
             .ToDictionary(property => property.Name, property => property.Value);
             
         var templateJsonElement = argumentsElement[1];
-            
-        var augmentedRewriter = new BottomUpChainRewriter
-        (
-            new GetAttributeValueRewriter<JsonElement>(attributes),
-            rootRewriter
-        );
-            
-        return augmentedRewriter.Rewrite(templateJsonElement);
+
+        return rootRewriter
+            .PrependToBottomUp(new GetAttributeValueRewriter<JsonElement>(attributes))
+            .Rewrite(templateJsonElement);
     }
 }

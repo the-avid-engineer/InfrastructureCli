@@ -5,7 +5,7 @@ namespace InfrastructureCli.Rewriters;
 
 internal sealed class GetPropertyValueRewriter : RewriterBase, IRewriter
 {
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
         if (TryGetArguments(jsonElement, "GetPropertyValue", out var argumentsElement) != true ||
             argumentsElement.ValueKind != JsonValueKind.Array ||

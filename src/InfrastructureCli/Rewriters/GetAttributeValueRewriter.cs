@@ -4,7 +4,11 @@ using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Rewriters;
 
-internal sealed class GetAttributeValueRewriter<TAttributeValue> : RewriterBase, IRewriter
+interface IFoo
+{
+}
+
+internal sealed class GetAttributeValueRewriter<TAttributeValue> : RewriterBase, IRewriter, IFoo
 {
     private readonly Dictionary<string, TAttributeValue> _attributes;
 
@@ -13,7 +17,7 @@ internal sealed class GetAttributeValueRewriter<TAttributeValue> : RewriterBase,
         _attributes = attributes;
     }
 
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
         return RewriteExplicit(RewriteImplicit(jsonElement));
     }

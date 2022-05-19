@@ -5,7 +5,7 @@ namespace InfrastructureCli.Rewriters;
 
 internal sealed class IntProductionRewriter : RewriterBase, IRewriter
 {
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
         if (TryGetArguments(jsonElement, "IntProduct", out var argumentsElement) != true ||
             argumentsElement.ValueKind != JsonValueKind.Array)

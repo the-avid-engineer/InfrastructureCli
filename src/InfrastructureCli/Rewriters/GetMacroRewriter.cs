@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json;
-using InfrastructureCli.Extensions;
 
 namespace InfrastructureCli.Rewriters;
 
@@ -13,8 +13,10 @@ internal sealed class GetMacroRewriter : RewriterBase, IRewriter
         _macros = macros;
     }
 
-    public JsonElement Rewrite(JsonElement jsonElement, IRewriter rootRewriter)
+    public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
+        Debug.WriteLine(jsonElement.ToString());
+        
         if (TryGetArguments(jsonElement, "GetMacro", out var argumentsElement) != true ||
             argumentsElement.ValueKind != JsonValueKind.String)
         {
