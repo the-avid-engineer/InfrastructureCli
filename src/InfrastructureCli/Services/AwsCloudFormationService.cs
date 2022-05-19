@@ -22,6 +22,20 @@ public static class AwsCloudFormationService
         }
     }
     
+    public static class OnCreateWithoutChangeSet
+    {
+        internal static bool EnableTerminationProtection = default;
+        internal static string OnFailure = "ROLLBACK";
+
+        public static void ShouldNotEnableTerminationProtection() => EnableTerminationProtection = false;
+        public static void ShouldEnableTerminationProtection() => EnableTerminationProtection = true;
+
+        public static void ShouldRollbackOnFailure() => OnFailure = "ROLLBACK";
+        public static void ShouldDeleteOnFailure() => OnFailure = "DELETE";
+        public static void ShouldDoNothingOnFailure() => OnFailure = "DO_NOTHING";
+    }
+
+    
     private const string SuccessfulCreateStatus = "CREATE_COMPLETE";
 
     private static readonly string[] WaitToEndCreateStatuses =
@@ -211,6 +225,8 @@ public static class AwsCloudFormationService
             StackName = GetStackName(options.Configuration.TemplateOptions),
             Capabilities = GetCapabilities(options.Configuration.TemplateOptions),
             Tags = GetTags(options.Configuration.TemplateOptions),
+            EnableTerminationProtection = OnCreateWithoutChangeSet.EnableTerminationProtection,
+            OnFailure = OnCreateWithoutChangeSet.OnFailure,
             TemplateBody = GetTemplateBody(options.Template),
             Parameters = GetParameters(options.Parameters)
         };
