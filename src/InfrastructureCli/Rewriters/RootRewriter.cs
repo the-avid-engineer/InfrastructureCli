@@ -23,14 +23,7 @@ internal sealed class RootRewriter : RewriterBase, IRootRewriter
 
     private JsonElement Rewrite(JsonElement jsonElement, IRewriter rewriter)
     {
-        var newJsonElement = rewriter.Rewrite(jsonElement, this);
-
-        if (!Equals(jsonElement, newJsonElement) && rewriter is not IFoo)
-        {
-            Debug.WriteLine($"{rewriter.GetType().Name} Rewrite Succeeded");
-        }
-
-        return newJsonElement;
+        return rewriter.Rewrite(jsonElement, this);
     }
 
     public JsonElement Rewrite(JsonElement jsonElement)

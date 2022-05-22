@@ -4,11 +4,7 @@ using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Rewriters;
 
-interface IFoo
-{
-}
-
-internal sealed class GetAttributeValueRewriter<TAttributeValue> : RewriterBase, IRewriter, IFoo
+internal sealed class GetAttributeValueRewriter<TAttributeValue> : RewriterBase, IRewriter
 {
     private readonly Dictionary<string, TAttributeValue> _attributes;
 
