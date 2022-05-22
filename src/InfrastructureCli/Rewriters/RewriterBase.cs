@@ -11,7 +11,23 @@ internal abstract class RewriterBase
     {
         return TryGetProperties(jsonElement, out _);
     }
-        
+
+    protected static bool TryGetElements(JsonElement jsonElement, out JsonElement[] jsonElements)
+    {
+        jsonElements = default!;
+
+        if (jsonElement.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        jsonElements = jsonElement
+            .EnumerateArray()
+            .ToArray();
+
+        return true;
+    }
+
     protected static bool TryGetProperties(JsonElement jsonElement, out JsonProperty[] jsonProperties)
     {
         jsonProperties = default!;
