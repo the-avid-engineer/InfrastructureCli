@@ -57,8 +57,8 @@ public class JsonElementExtensionsTests
             
         var actualOutput = rootRewriter.Rewrite(input);
 
-        var formattedExpectedOutput = JsonService.Serialize(expectedOutput);
-        var formattedActualOutput = JsonService.Serialize(actualOutput);
+        var formattedExpectedOutput = JsonService.Serialize(expectedOutput).Replace(@"\r\n", @"\n");
+        var formattedActualOutput = JsonService.Serialize(actualOutput).Replace(@"\r\n", @"\n");
 
         // ASSERT
 
