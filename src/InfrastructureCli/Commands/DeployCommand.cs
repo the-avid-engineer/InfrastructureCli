@@ -46,7 +46,7 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
 
         var region = configuration.TemplateType switch
         {
-            TemplateType.AwsCloudFormation => AwsCloudFormationService.GetRegion(),
+            TemplateType.AwsCloudFormation => AwsService.GetRegionName(),
             _ => throw new NotSupportedException()
         };
 
