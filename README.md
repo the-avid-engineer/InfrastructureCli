@@ -203,6 +203,66 @@ Would be re-written as:
 
 ---
 
+#### @Fn::UsingAttributeMacro
+
+An object with a single key of `@Fn::UsingAttributeMacro` and a value of an array with four elements, the first being the name of the attribute macro, the second being the name of the attribute arguments, and the third and fourth being anything, is recognized by this rewriter. Each element of the second element must be a string. The third element can be retrieved by using a corresponding `@Fn::GetAttributeMacro` function in the fourth element of the array. 
+
+For example:
+
+```json
+{
+    "@Fn::UsingAttributeMacro": [
+        "MyAttributeMacro",
+        [ "Argument1", "Argument2" ],
+        "@{Argument1}-@{Argument2}"
+        {
+            "@Fn::GetAttributeMacro": [ "MyAttributeMacro", "A", "B" ]
+        }
+}
+```
+
+is equivalent to the following:
+
+```json
+{
+    "@Fn::UsingAttributes": [
+        {
+            "Argument1": "A",
+            "Argument2": "B"
+        },
+        "@{Arugment1}-@{Argument2}"
+    ]
+}
+```
+
+---
+
+#### @Fn::GetAttributeMacro
+
+An object with a single key of `@Fn::GetAttributeMacro` and a value of an array is recognized by this rewriter. The first element of the array must be the same as the first element of the argumnets provided to a corresponding `@Fn::UsingAttributeMacro`. The length of the array must be `1` plus the number of elements in the second element of the arguments provided to a corresponding `@Fn::UsingAttributeMacro`.
+
+For example:
+
+```json
+{
+    "@Fn::UsingAttributeMacro": [
+        "MyAttributeMacro",
+        [ "Argument1", "Argument2" ],
+        "@{Argument1}-@{Argument2}"
+        {
+            "@Fn::GetAttributeMacro": [ "MyAttributeMacro", "A", "B" ]
+        }
+}
+```
+
+Would be rewritten as:
+
+```json
+"A-B"
+```
+
+---
+
 #### @Fn::UsingMacros
 
 An object with a single key of `@Fn::UsingMacros` and a value of an array with two elements, the first being an inner object and the second being anything, is recognized by this rewriter. Each property of the first element, the inner object, can be retrieved by using a corresponding `@Fn::GetMacro` function in the second element of the array.

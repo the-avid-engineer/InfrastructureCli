@@ -28,6 +28,7 @@ public class JsonElementExtensionsTests
     [InlineData("GetMacroDefined")]
     [InlineData("GetMacroUndefined")]
     [InlineData("Precedence2")]
+    [InlineData("GetAttributeMacroDefined")]
     public async Task RewriteFixtureTests(string fixtureName)
     {
         // ARRANGE

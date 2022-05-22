@@ -1,0 +1,10 @@
+{
+    "@Fn::UsingAttributeMacro": [
+        "KnownAttributeMacro",
+        [ "Argument1", "Argument2" ],
+        "@{Argument1}-@{Argument2}",
+        {
+            "@Fn::GetAttributeMacro": [ "KnownAttributeMacro", "A", "B" ]
+        }
+    ]    
+}
