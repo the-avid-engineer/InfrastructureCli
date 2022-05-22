@@ -163,6 +163,7 @@ internal sealed class RootRewriter : RewriterBase, IRootRewriter
         var topDownRewriters = new List<IRewriter>
         {
             new IncludeRawFileRewriter(),
+            new UsingAttributeMacroRewriter(),
             new UsingMacrosRewriter()
         };
 
