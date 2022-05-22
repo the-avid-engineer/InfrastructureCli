@@ -58,6 +58,23 @@ internal abstract class RewriterBase
         return true;
     }
 
+    protected static bool TryGetStrings(JsonElement jsonElement, out string[] values)
+    {
+        values = default!;
+
+        if (TryGetElements(jsonElement, out var jsonElements) != true ||
+            jsonElements.Any(candidateValueElement => candidateValueElement.ValueKind != JsonValueKind.String))
+        {
+            return false;
+        }
+
+        values = jsonElements
+            .Select(element => element.GetString()!)
+            .ToArray();
+
+        return true;
+    }
+
     protected static bool TryGetArguments(JsonElement jsonElement, string functionName, out JsonElement argumentsElement)
     {
         argumentsElement = default!;
