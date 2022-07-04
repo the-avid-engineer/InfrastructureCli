@@ -24,14 +24,56 @@ public static class AwsCloudFormationService
     public static class OnCreateWithoutChangeSet
     {
         internal static bool EnableTerminationProtection = default;
-        internal static string OnFailure = "ROLLBACK";
+        internal static OnFailure? OnFailure = OnFailure.ROLLBACK;
+        internal static bool DisableRollback = false;
 
         public static void ShouldNotEnableTerminationProtection() => EnableTerminationProtection = false;
         public static void ShouldEnableTerminationProtection() => EnableTerminationProtection = true;
 
-        public static void ShouldRollbackOnFailure() => OnFailure = "ROLLBACK";
-        public static void ShouldDeleteOnFailure() => OnFailure = "DELETE";
-        public static void ShouldDoNothingOnFailure() => OnFailure = "DO_NOTHING";
+        public static void ShouldRollbackOnFailure()
+        {
+            OnFailure = OnFailure.ROLLBACK;
+            DisableRollback = false;
+        }
+
+        public static void ShouldDeleteOnFailure()
+        {
+            OnFailure = OnFailure.DELETE;
+            DisableRollback = false;
+        }
+
+        public static void ShouldDoNothingOnFailure()
+        {
+            OnFailure = OnFailure.DO_NOTHING;
+            DisableRollback = false;
+        }
+
+        public static void ShouldEnableRollback()
+        {
+            OnFailure = OnFailure.ROLLBACK;
+            DisableRollback = false;
+        }
+
+        public static void ShouldDisableRollback()
+        {
+            OnFailure = null;
+            DisableRollback = true;
+        }
+    }
+
+    public static class OnUpdateWithoutChangeSet
+    {
+        internal static bool DisableRollback = false;
+
+        public static void ShouldEnableRollback()
+        {
+            DisableRollback = false;
+        }
+
+        public static void ShouldDisableRollback()
+        {
+            DisableRollback = true;
+        }
     }
 
     private const string SuccessfulCreateStatus = "CREATE_COMPLETE";
@@ -222,6 +264,7 @@ public static class AwsCloudFormationService
             Tags = GetTags(templateOptions),
             EnableTerminationProtection = OnCreateWithoutChangeSet.EnableTerminationProtection,
             OnFailure = OnCreateWithoutChangeSet.OnFailure,
+            DisableRollback = OnCreateWithoutChangeSet.DisableRollback,
             TemplateBody = GetTemplateBody(options.Template),
             Parameters = GetParameters(options.Parameters)
         };
@@ -272,6 +315,7 @@ public static class AwsCloudFormationService
                 Capabilities = GetCapabilities(templateOptions),
                 Tags = GetTags(templateOptions),
                 TemplateBody = GetTemplateBody(options.Template),
+                DisableRollback = OnUpdateWithoutChangeSet.DisableRollback,
                 Parameters = options.UsePreviousParameters
                     ? GetParameters(options.Parameters, stack)
                     : GetParameters(options.Parameters)
