@@ -229,7 +229,7 @@ public static class AwsCloudFormationService
         return $"on--{dateTime:yyyy-M-d}--at--{dateTime:h-mm-ss-tt}--{guid}";
     }
     
-    private static async Task<bool> WaitForStatusChange(IConsole console, AwsCloudFormationTemplateOptions templateOptions, string? successStatus, params string[] loopStatuses)
+    private static async Task<bool> WaitForStatusChange(bool waitNext, IConsole console, AwsCloudFormationTemplateOptions templateOptions, string? successStatus, params string[] loopStatuses)
     {
         var currentStatus = loopStatuses[0];
             
@@ -237,7 +237,14 @@ public static class AwsCloudFormationService
         {
             console.WriteLine("Wait for 30 seconds");
                 
-            await Task.Delay(TimeSpan.FromSeconds(30));
+            if (waitNext)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(30));
+            }
+            else
+            {
+                waitNext = true;
+            }
                 
             var stack = await GetStack(templateOptions);
 
@@ -279,7 +286,7 @@ public static class AwsCloudFormationService
             return false;
         }
             
-        return await WaitForStatusChange(console, templateOptions, SuccessfulCreateStatus, WaitToEndCreateStatuses);
+        return await WaitForStatusChange(true, console, templateOptions, SuccessfulCreateStatus, WaitToEndCreateStatuses);
     }
 
     private static async Task<bool> CreateStackWithChangeSet(IConsole console, DeployOptions options, AwsCloudFormationTemplateOptions templateOptions)
@@ -307,7 +314,7 @@ public static class AwsCloudFormationService
     {
         try
         {
-            await WaitForStatusChange(console, templateOptions, null, WaitToBeginUpdateStatuses);
+            await WaitForStatusChange(false, console, templateOptions, null, WaitToBeginUpdateStatuses);
             
             var request = new UpdateStackRequest
             {
@@ -331,7 +338,7 @@ public static class AwsCloudFormationService
                 return false;
             }
 
-            return await WaitForStatusChange(console, templateOptions, SuccessfulUpdateStatus, WaitToEndUpdateStatuses);
+            return await WaitForStatusChange(true, console, templateOptions, SuccessfulUpdateStatus, WaitToEndUpdateStatuses);
         }
         catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
         {
