@@ -1,0 +1,26 @@
+{
+    "@Fn::SpreadElements": {
+        "@Fn::MapNamedElements": [
+            [
+                "Outer1",
+                "Outer2"
+            ],
+            "Outer",
+            {
+                "@Fn::MapNamedElements": [
+                    [
+                        "Inner1",
+                        "Inner2"
+                    ],
+                    "Inner",
+                    {
+                        "OuterValue": "@{OuterValue}",
+                        "OuterIndex": "@{OuterIndex}",
+                        "InnerValue": "@{InnerValue}",
+                        "InnerIndex": "@{InnerIndex}"
+                    }
+                ]
+            }
+        ]
+    }
+}

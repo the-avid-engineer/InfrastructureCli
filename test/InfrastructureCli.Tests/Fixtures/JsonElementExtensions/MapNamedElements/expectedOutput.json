@@ -1,0 +1,26 @@
+[
+    {
+        "OuterValue": "Outer1",
+        "OuterIndex": "0",
+        "InnerValue": "Inner1",
+        "InnerIndex": "0"
+    },
+    {
+        "OuterValue": "Outer1",
+        "OuterIndex": "0",
+        "InnerValue": "Inner2",
+        "InnerIndex": "1"
+    },
+    {
+        "OuterValue": "Outer2",
+        "OuterIndex": "1",
+        "InnerValue": "Inner1",
+        "InnerIndex": "0"
+    },
+    {
+        "OuterValue": "Outer2",
+        "OuterIndex": "1",
+        "InnerValue": "Inner2",
+        "InnerIndex": "1"
+    }
+]
