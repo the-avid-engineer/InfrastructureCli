@@ -144,6 +144,7 @@ internal sealed class RootRewriter : RewriterBase, IRootRewriter
                 new MapElementsRewriter(),
                 new MapNamedElementsRewriter(),
                 new MapPropertiesRewriter(),
+                new MapNamedPropertiesRewriter(),
                 new UsingAttributesRewriter(),
                 new GetPropertyValueRewriter(),
                 new SpreadElementsRewriter(),

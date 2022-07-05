@@ -1,0 +1,26 @@
+[
+    {
+        "OuterPairValue": "Outer1",
+        "OuterPairKey": "OuterKey1",
+        "InnerPairValue": "Inner1",
+        "InnerPairKey": "InnerKey1"
+    },
+    {
+        "OuterPairValue": "Outer1",
+        "OuterPairKey": "OuterKey1",
+        "InnerPairValue": "Inner2",
+        "InnerPairKey": "InnerKey2"
+    },
+    {
+        "OuterPairValue": "Outer2",
+        "OuterPairKey": "OuterKey2",
+        "InnerPairValue": "Inner1",
+        "InnerPairKey": "InnerKey1"
+    },
+    {
+        "OuterPairValue": "Outer2",
+        "OuterPairKey": "OuterKey2",
+        "InnerPairValue": "Inner2",
+        "InnerPairKey": "InnerKey2"
+    }
+]

@@ -1,0 +1,26 @@
+{
+    "@Fn::SpreadElements": {
+        "@Fn::MapNamedProperties": [
+            {
+                "OuterKey1": "Outer1",
+                "OuterKey2": "Outer2"
+            },
+            "OuterPair",
+            {
+                "@Fn::MapNamedProperties": [
+                    {
+                        "InnerKey1": "Inner1",
+                        "InnerKey2": "Inner2"
+                    },
+                    "InnerPair",
+                    {
+                        "OuterPairValue": "@{OuterPairValue}",
+                        "OuterPairKey": "@{OuterPairKey}",
+                        "InnerPairValue": "@{InnerPairValue}",
+                        "InnerPairKey": "@{InnerPairKey}"
+                    }
+                ]
+            }
+        ]
+    }
+}
