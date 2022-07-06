@@ -270,12 +270,19 @@ public static class AwsCloudFormationService
             Capabilities = GetCapabilities(templateOptions),
             Tags = GetTags(templateOptions),
             EnableTerminationProtection = OnCreateWithoutChangeSet.EnableTerminationProtection,
-            OnFailure = OnCreateWithoutChangeSet.OnFailure,
-            DisableRollback = OnCreateWithoutChangeSet.DisableRollback,
             TemplateBody = GetTemplateBody(options.Template),
             Parameters = GetParameters(options.Parameters)
         };
-            
+
+        if (OnCreateWithoutChangeSet.DisableRollback)
+        {
+            request.DisableRollback = true;
+        }
+        else
+        {
+            request.OnFailure = OnCreateWithoutChangeSet.OnFailure;
+        }
+
         LogParameters(console, request.Parameters);
         LogTemplateBody(console, request.TemplateBody);
 
