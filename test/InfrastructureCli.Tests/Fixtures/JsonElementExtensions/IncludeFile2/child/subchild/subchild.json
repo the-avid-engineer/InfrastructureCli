@@ -1,0 +1,3 @@
+{
+  "@Fn::IncludeFile": ["..", "..", "expectedOutput.json"]
+}

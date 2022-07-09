@@ -19,8 +19,32 @@ internal sealed class IncludeFileRewriter : RewriterBase, IRewriter
             .EnumerateArray()
             .ToArray();
 
-        if (childJsonElements.Any(childJsonElement => childJsonElement.ValueKind != JsonValueKind.String))
+        var nonStringChildJsonElements = childJsonElements
+            .Where(childJsonElement => childJsonElement.ValueKind != JsonValueKind.String)
+            .ToArray();
+
+        if (nonStringChildJsonElements.Any())
         {
+            if (nonStringChildJsonElements.All(childJsonElements => childJsonElements.ValueKind == JsonValueKind.Object && !IsNormalObject(childJsonElements)))
+            {
+                return BuildJsonElement((jsonWriter) =>
+                {
+                    jsonWriter.WriteStartObject();
+                    jsonWriter.WritePropertyName("@Fn::IncludeFileFromPath");
+                    jsonWriter.WriteStartArray();
+
+                    jsonWriter.WriteStringValue(rootRewriter.CurrentPath);
+
+                    foreach (var childJsonElement in childJsonElements)
+                    {
+                        childJsonElement.WriteTo(jsonWriter);
+                    }
+
+                    jsonWriter.WriteEndArray();
+                    jsonWriter.WriteEndObject();
+                });
+            }
+
             return jsonElement;
         }
 

@@ -1,0 +1,10 @@
+{
+    "@Fn::UsingAttributes": [
+        {
+            "Subchild": "subchild"
+        },
+        {
+            "@Fn::IncludeFile": [ "child", "child.json" ]
+        }
+    ]
+}

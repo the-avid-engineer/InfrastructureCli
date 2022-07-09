@@ -15,6 +15,7 @@ public class JsonElementExtensionsTests
     [InlineData("GetAttributeValueDefined")]
     [InlineData("GetAttributeValueUndefined")]
     [InlineData("IncludeFile")]
+    [InlineData("IncludeFile2")]
     [InlineData("IncludeRawFile")]
     [InlineData("MapElements")]
     [InlineData("MapProperties")]

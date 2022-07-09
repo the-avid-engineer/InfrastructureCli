@@ -1,0 +1,8 @@
+{
+    "@Fn::IncludeFile": [
+        {
+            "@Fn::GetAttributeValue": "Subchild"
+        },
+        "subchild.json"
+    ]
+}

@@ -151,6 +151,7 @@ internal sealed class RootRewriter : RewriterBase, IRootRewriter
                 new SpreadPropertiesRewriter(),
                 new SerializeRewriter(),
                 new IntProductionRewriter(),
+                new IncludeFileFromPathRewriter(),
                 new IncludeFileRewriter(),
             }
         );

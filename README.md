@@ -742,3 +742,7 @@ Would be rewritten as:
   }
 }
 ```
+
+#### @Fn::IncludeFileFromPath
+
+This function is not intended to be used directly.
