@@ -4,8 +4,8 @@ namespace InfrastructureCli.Models;
 
 public record AwsCloudFormationTemplateOptions
 (
-    string? StackName,
-    bool? UseChangeSet,
-    string[]? Capabilities,
-    Dictionary<string, string>? Tags
+    string? StackName = null,
+    bool? UseChangeSet = null,
+    string[]? Capabilities = null,
+    Dictionary<string, string>? Tags = null
 );
