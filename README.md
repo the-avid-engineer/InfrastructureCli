@@ -108,14 +108,18 @@ Possible Values:
 This allows you to configure special options for the deployment, which cannot be included in the template itself. For the sake ofre-usability, you probably want to use `@Fn::IncludeFile` here and specify the complete template options elsewhere. More on this in the JSON Extensions.
 
 #### AWS CloudFormation
-| Key          | Value                      | Default        | Description                                                    |
-|--------------|----------------------------|----------------|----------------------------------------------------------------|
-| StackName    | string                     | None, Required | The name of the CloudFormation stack.                          |
-| UseChangeSet | bool                       | `false`        | Will use CreateChangeSet instead of CreateStack or UpdateStack |
-| Capabilities | string[]                   | `[]`           | Grants certain capabilities to CloudFormation while running.   |
-| Tags         | Dictionary<string, string> | `{}`           | Adds tags to all resources that support stack-level tagging.   |
+| Key                  | Value                        | Default        | Description                                                                                               |
+|----------------------|------------------------------|----------------|-----------------------------------------------------------------------------------------------------------|
+| StackName            | string                       | None, Required | The name of the CloudFormation stack.                                                                     |
+| UseChangeSet         | bool                         | `false`        | Will use CreateChangeSet instead of CreateStack or UpdateStack<sup>1</sup>                                           |
+| Capabilities         | string[]                     | `[]`           | Grants certain capabilities to CloudFormation while running.                                              |
+| Tags                 | Dictionary<string, string>   | `{}`           | Adds tags to all resources that support stack-level tagging.                                              |
+| ImportParameters     | Dictionary<string, string>   | `{}`           | Imports an Exported Output<sup>2</sup> and uses it as the value of a parameter.                           |
+| ImportParameterLists | Dictionary<string, string[]> | `{}`           | Imports a set of Exported Outputs<sup>2</sup> and uses them as the values of a parameter with Type List<> |
 
-See [CreateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateStack.html),  [UpdateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_UpdateStack.html), and [CreateChangeSet](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateChangeSet.html) for more information.
+<sup>1</sup> See [CreateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateStack.html),  [UpdateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_UpdateStack.html), and [CreateChangeSet](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateChangeSet.html)
+
+<sup>2</sup> See [Outputs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html). Outputs _must_ have an export name to be used with this feature.
 
 ---
 

@@ -104,13 +104,18 @@ public static class AwsCloudFormationService
     
     private static readonly IAmazonCloudFormation Client = new AmazonCloudFormationClient();
 
-    private static Parameter GetParameter(KeyValuePair<string, string> parameter)
+    private static Parameter GetParameter(string parameterName, string parameterValue)
     {
         return new Parameter
         {
-            ParameterKey = parameter.Key,
-            ParameterValue = parameter.Value
+            ParameterKey = parameterName,
+            ParameterValue = parameterValue
         };
+    }
+
+    private static Parameter GetParameter(KeyValuePair<string, string> parameter)
+    {
+        return GetParameter(parameter.Key, parameter.Value);
     }
 
     private static Parameter ReuseParameter(Parameter parameter)
@@ -132,11 +137,6 @@ public static class AwsCloudFormationService
         return templateOptions.StackName ?? throw new ArgumentException("Missing Required StackName Template Option.", nameof(templateOptions));
     }
 
-    private static List<Parameter> GetParameters(Dictionary<string, string> parameters)
-    {
-        return parameters.Select(GetParameter).ToList();
-    }
-
     private static List<string> GetCapabilities(AwsCloudFormationTemplateOptions templateOptions)
     {
         return templateOptions.Capabilities?.ToList() ?? new List<string>();
@@ -147,6 +147,95 @@ public static class AwsCloudFormationService
         return templateOptions.UseChangeSet ?? false;
     }
     
+    private static async Task<Dictionary<string, string>> GetExportedOutputs(List<string> neededExports)
+    {
+        var exports = new Dictionary<string, string>();
+
+        string? nextToken = null;
+
+        do
+        {
+            var listExportsResponse = await Client.ListExportsAsync(new ListExportsRequest
+            {
+                NextToken = nextToken
+            });
+
+            foreach (var export in listExportsResponse.Exports)
+            {
+                if (!neededExports.Contains(export.Name))
+                {
+                    continue;
+                }
+
+                exports.Add(export.Name, export.Value);
+
+                neededExports.Remove(export.Name);
+            }
+
+            if (neededExports.Count == 0)
+            {
+                break;
+            }
+
+            nextToken = listExportsResponse.NextToken;
+        } while (nextToken != null);
+
+        return exports;
+    }
+
+    private static async Task<List<Parameter>> GetImportParameters(IConsole console, AwsCloudFormationTemplateOptions templateOptions)
+    {
+        var neededExports = new List<string>();
+
+        if (templateOptions.ImportParameters is not null)
+        {
+            foreach (var (_, exportName) in templateOptions.ImportParameters)
+            {
+                neededExports.Add(exportName);
+            }
+        }
+
+        if (templateOptions.ImportParameterLists is not null)
+        {
+            foreach (var (_, exportNames) in templateOptions.ImportParameterLists)
+            {
+                neededExports.AddRange(exportNames);
+            }
+        }
+
+        var importedParameters = new List<Parameter>();
+
+        if (neededExports.Count == 0)
+        {
+            return importedParameters;
+        }
+
+        var exportedOutputs = await GetExportedOutputs(neededExports);
+
+        if (templateOptions.ImportParameters is not null)
+        {
+            foreach (var (parameterName, exportName) in templateOptions.ImportParameters)
+            {
+                var exportValue = exportedOutputs.GetValueOrDefault(exportName, "")!;
+
+                importedParameters.Add(GetParameter(parameterName, exportValue));
+            }
+        }
+
+        if (templateOptions.ImportParameterLists is not null)
+        {
+            foreach (var (parameterName, exportNames) in templateOptions.ImportParameterLists)
+            {
+                var exportValues = exportNames
+                    .Select(exportName => exportedOutputs.GetValueOrDefault(exportName, "")!);
+
+                importedParameters.Add(GetParameter(parameterName, string.Join(",", exportValues)));
+            }
+        }
+
+        return importedParameters;
+    }
+
     private static List<Tag> GetTags(AwsCloudFormationTemplateOptions templateOptions)
     {
         return templateOptions
@@ -158,10 +247,17 @@ public static class AwsCloudFormationService
             })
             .ToList() ?? new List<Tag>();
     }
-        
-    private static List<Parameter> GetParameters(Dictionary<string, string> parameters, Stack stack)
+
+    private static async Task<List<Parameter>> GetParameters(IConsole console, AwsCloudFormationTemplateOptions templateOptions, Dictionary<string, string> cliParameters)
     {
-        var parameterDictionary = GetParameters(parameters)
+        var importParameters = await GetImportParameters(console, templateOptions);
+
+        return cliParameters.Select(GetParameter).Concat(importParameters).ToList();
+    }
+
+    private static async Task<List<Parameter>> GetParameters(IConsole console, AwsCloudFormationTemplateOptions templateOptions, Dictionary<string, string> parameters, Stack stack)
+    {
+        var parameterDictionary = (await GetParameters(console, templateOptions, parameters))
             .ToDictionary(parameter => parameter.ParameterKey);
             
         foreach (var parameter in stack.Parameters.Where(parameter => parameterDictionary.ContainsKey(parameter.ParameterKey) == false))
@@ -271,7 +367,7 @@ public static class AwsCloudFormationService
             Tags = GetTags(templateOptions),
             EnableTerminationProtection = OnCreateWithoutChangeSet.EnableTerminationProtection,
             TemplateBody = GetTemplateBody(options.Template),
-            Parameters = GetParameters(options.Parameters)
+            Parameters = await GetParameters(console, templateOptions, options.Parameters)
         };
 
         if (OnCreateWithoutChangeSet.DisableRollback)
@@ -306,7 +402,7 @@ public static class AwsCloudFormationService
             Capabilities = GetCapabilities(templateOptions),
             Tags = GetTags(templateOptions),
             TemplateBody = GetTemplateBody(options.Template),
-            Parameters = GetParameters(options.Parameters)
+            Parameters = await GetParameters(console, templateOptions, options.Parameters)
         };
             
         LogParameters(console, request.Parameters);
@@ -330,9 +426,9 @@ public static class AwsCloudFormationService
                 Tags = GetTags(templateOptions),
                 TemplateBody = GetTemplateBody(options.Template),
                 DisableRollback = OnUpdateWithoutChangeSet.DisableRollback,
-                Parameters = options.UsePreviousParameters
-                    ? GetParameters(options.Parameters, stack)
-                    : GetParameters(options.Parameters)
+                Parameters = await (options.UsePreviousParameters
+                    ? GetParameters(console, templateOptions, options.Parameters, stack)
+                    : GetParameters(console, templateOptions, options.Parameters))
             };
             
             LogParameters(console, request.Parameters);
@@ -367,9 +463,9 @@ public static class AwsCloudFormationService
                 Capabilities = GetCapabilities(templateOptions),
                 Tags = GetTags(templateOptions),
                 TemplateBody = GetTemplateBody(options.Template),
-                Parameters = options.UsePreviousParameters
-                    ? GetParameters(options.Parameters, stack)
-                    : GetParameters(options.Parameters)
+                Parameters = await (options.UsePreviousParameters
+                    ? GetParameters(console, templateOptions, options.Parameters, stack)
+                    : GetParameters(console, templateOptions, options.Parameters))
             };
             
             LogParameters(console, request.Parameters);
