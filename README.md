@@ -105,7 +105,7 @@ Possible Values:
 
 ### Template Options
 
-This allows you to configure special options for the deployment, which cannot be included in the template itself. For the sake ofre-usability, you probably want to use `@Fn::IncludeFile` here and specify the complete template options elsewhere. More on this in the JSON Extensions.
+This allows you to configure special options for the deployment, which cannot be included in the template itself. For the sake of re-usability, you probably want to use `@Fn::IncludeFile` here and specify the complete template options elsewhere. More on this in the JSON Extensions.
 
 #### AWS CloudFormation
 | Key                  | Value                        | Default        | Description                                                                                               |
