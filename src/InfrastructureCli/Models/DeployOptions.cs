@@ -5,7 +5,7 @@ namespace InfrastructureCli.Models;
 
 internal record DeployOptions
 (
-    Configuration Configuration,
+    IReadOnlyDictionary<string, JsonElement> TemplateOptions,
     JsonElement Template,
     bool UsePreviousParameters,
     Dictionary<string, string> Parameters

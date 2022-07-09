@@ -73,7 +73,7 @@ The configurations file is a JSON file which contains all the information needed
 
 ## GlobalRegionAttributes
 
-This is a dictionary, where the key is the cloud-provider specific region string, and the value is a dictionary, where the key is any string and the value is any valid JSON. More on this in the Template File Extensions. These attributes apply to _all_ configurations.
+This is a dictionary, where the key is the cloud-provider specific region string, and the value is a dictionary, where the key is any string and the value is any valid JSON. More on this in the JSON Extensions. These attributes apply to _all_ configurations.
 
 ### AWS CloudFormation
 
@@ -85,7 +85,7 @@ For AWS CloudFormation, example keys include:
 
 ## GlobalAttributes
 
-This is a dictionary, where the key is any string and the value is any valid JSON. More on this in the Template File Extensions. These attributes apply to _all_ configurations.
+This is a dictionary, where the key is any string and the value is any valid JSON. More on this in the JSON Extensions. These attributes apply to _all_ configurations.
 
 ---
 
@@ -105,7 +105,7 @@ Possible Values:
 
 ### Template Options
 
-This allows you to configure special options for the deployment, which cannot be included in the template itself.
+This allows you to configure special options for the deployment, which cannot be included in the template itself. For the sake ofre-usability, you probably want to use `@Fn::IncludeFile` here and specify the complete template options elsewhere. More on this in the JSON Extensions.
 
 #### AWS CloudFormation
 | Key          | Value                      | Default        | Description                                                    |
@@ -121,7 +121,7 @@ See [CreateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIRefere
 
 ### Template
 
-This is the template of the deployment. For the sake of re-usability, you probably want to use `@Fn::IncludeFile` here and specify the complete template elsewhere.  More on this in the Template File Extensions.
+This is the template of the deployment. For the sake of re-usability, you probably want to use `@Fn::IncludeFile` here and specify the complete template elsewhere.  More on this in the JSON Extensions.
 
 #### AWS CloudFormation
 
@@ -131,7 +131,7 @@ See [User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/
 
 ### RegionAttributes
 
-This is a dictionary, where the key is the cloud-provider specific region string, and the value is a dictionary, where the key is any string and the value is any valid JSON. More on this in the Template File Extensions. These attributes _only apply_ to the configuration in which they are defined.
+This is a dictionary, where the key is the cloud-provider specific region string, and the value is a dictionary, where the key is any string and the value is any valid JSON. More on this in the JSON Extensions. These attributes _only apply_ to the configuration in which they are defined.
 
 #### AWS CloudFormation
 
@@ -144,7 +144,7 @@ For AWS CloudFormation, example keys include:
 
 ### Attributes
 
-This is a dictionary, where the key is any string and the value is any valid JSON. More on this in the Template File Extensions. These attributes _only apply_ to the configuration in which they are defined.
+This is a dictionary, where the key is any string and the value is any valid JSON. More on this in the JSON Extensions. These attributes _only apply_ to the configuration in which they are defined.
 
 #### AWS CloudFormation
 
@@ -154,9 +154,11 @@ See [Outputs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/out
 
 ---
 
-## Template File Extensions
+## JSON Extensions
 
-The template file is a JSON file which codifies the infrastructure. The template file is passed through a rewriter which will re-write the structure, and allows you to do some basic programming in JSON format. Functions are listed in order of precedence.
+The template options and template are passed through a series of rewriters which will re-write the tree structure, making replacements along the way.
+
+This allows you to do some basic programming in the JSON format. Functions are listed below in their order of traversal and precedence.
 
 ### Top-Down
 

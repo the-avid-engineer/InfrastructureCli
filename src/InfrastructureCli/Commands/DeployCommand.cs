@@ -4,6 +4,7 @@ using System.CommandLine;
 using System.CommandLine.IO;
 using System.CommandLine.NamingConventionBinder;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using InfrastructureCli.Models;
 using InfrastructureCli.Rewriters;
@@ -59,7 +60,12 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
             arguments.ConfigurationsFileName.DirectoryName!,
             region
         );
-            
+
+        var templateOptions = JsonService.Convert<JsonElement, Dictionary<string, JsonElement>>
+        (
+            rootRewriter.Rewrite(configuration.TemplateOptions)
+        );
+
         var template = rootRewriter.Rewrite(configuration.Template);
 
         if (arguments.FinalTemplateFileName != null)
@@ -71,7 +77,7 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
 
         var deployOptions = new DeployOptions
         (
-            configuration,
+            templateOptions,
             template,
             arguments.UsePreviousParameters,
             arguments.Parameters

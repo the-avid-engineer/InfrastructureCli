@@ -389,7 +389,7 @@ public static class AwsCloudFormationService
 
     internal static async Task<string?> Get(GetOptions getOptions)
     {
-        var templateOptions = DeserializeTemplateOptions(getOptions.Configuration.TemplateOptions);
+        var templateOptions = DeserializeTemplateOptions(getOptions.TemplateOptions);
 
         var stack = await GetStack(templateOptions);
 
@@ -401,7 +401,7 @@ public static class AwsCloudFormationService
         
     internal static async Task<bool> Deploy(IConsole console, DeployOptions deployOptions)
     {
-        var templateOptions = DeserializeTemplateOptions(deployOptions.Configuration.TemplateOptions);
+        var templateOptions = DeserializeTemplateOptions(deployOptions.TemplateOptions);
 
         var stack = await GetStack(templateOptions);
 

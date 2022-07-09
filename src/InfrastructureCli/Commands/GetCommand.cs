@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using InfrastructureCli.Models;
+using InfrastructureCli.Rewriters;
 using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Commands;
@@ -30,9 +32,30 @@ internal record GetCommand : CommandBase
             return 1;
         }
 
+        var region = configuration.TemplateType switch
+        {
+            TemplateType.AwsCloudFormation => AwsService.GetRegionName(),
+            _ => throw new NotSupportedException()
+        };
+
+        var rootRewriter = RootRewriter.Create
+        (
+            configurationsFile.GlobalAttributes,
+            configurationsFile.GlobalRegionAttributes,
+            configuration.Attributes,
+            configuration.RegionAttributes,
+            arguments.ConfigurationsFileName.DirectoryName!,
+            region
+        );
+
+        var templateOptions = JsonService.Convert<JsonElement, Dictionary<string, JsonElement>>
+        (
+            rootRewriter.Rewrite(configuration.TemplateOptions)
+        );
+
         var getOptions = new GetOptions
         (
-            configuration,
+            templateOptions,
             arguments.PropertyName
         );
             
