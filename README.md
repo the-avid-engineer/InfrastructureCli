@@ -150,12 +150,6 @@ For AWS CloudFormation, example keys include:
 
 This is a dictionary, where the key is any string and the value is any valid JSON. More on this in the JSON Extensions. These attributes _only apply_ to the configuration in which they are defined.
 
-#### AWS CloudFormation
-
-For CloudFormation, the property value should be the **Export Name** of a Stack output.
-
-See [Outputs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html) for more information.
-
 ---
 
 ## JSON Extensions
