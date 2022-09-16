@@ -15,8 +15,6 @@ internal sealed class GetMacroRewriter : RewriterBase, IRewriter
 
     public JsonElement Rewrite(JsonElement jsonElement, IRootRewriter rootRewriter)
     {
-        Debug.WriteLine(jsonElement.ToString());
-        
         if (TryGetArguments(jsonElement, "GetMacro", out var argumentsElement) != true ||
             argumentsElement.ValueKind != JsonValueKind.String)
         {

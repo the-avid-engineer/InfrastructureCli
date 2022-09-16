@@ -1,5 +1,11 @@
-﻿using System.CommandLine;
+﻿using System;
+using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
+using InfrastructureCli.Models;
+using InfrastructureCli.Rewriters;
 using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Commands;
@@ -26,5 +32,50 @@ public abstract record CommandBase
         configurationsFileName.AddAlias("-c");
 
         parentCommand.AddGlobalOption(configurationsFileName);
+    }
+
+    protected static async Task<(IRootRewriter, ICloudProvisioningService)> GetProvisioningTools
+    (
+        ConfigurationsFile configurationsFile,
+        Configuration configuration,
+        IConsole console,
+        string currentPath
+    )
+    {
+        ICloudProviderService cloudProviderService = configuration.TemplateType switch
+        {
+            TemplateType.AwsCloudFormation => new AwsService(console),
+            _ => throw new NotSupportedException()
+        };
+
+        var region = cloudProviderService.GetRegionName();
+
+        var rootRewriter = RootRewriter.Create
+        (
+            configurationsFile.GlobalAttributes,
+            configurationsFile.GlobalRegionAttributes,
+            configuration.Attributes,
+            configuration.RegionAttributes,
+            currentPath,
+            region
+        );
+
+        var templateOptions = JsonService.Convert<JsonElement, Dictionary<string, JsonElement>>
+        (
+            rootRewriter.Rewrite(configuration.TemplateOptions)
+        );
+
+        var cloudProvisioningService = cloudProviderService.GetProvisioningService(templateOptions);
+
+        var deployed = await cloudProvisioningService.IsDeployed();
+
+        rootRewriter = rootRewriter
+            .PrependToBottomUp(new GetResourceDeployTypeRewriter(cloudProvisioningService))
+            .PrependToBottomUp(new GetAttributeValueRewriter<object>(new Dictionary<string, object>
+            {
+                ["::DeployType"] = deployed ? "::Update" : "::Create"
+            }));
+        
+        return (rootRewriter, cloudProvisioningService);
     }
 }

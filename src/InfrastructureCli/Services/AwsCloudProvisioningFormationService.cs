@@ -12,8 +12,17 @@ using InfrastructureCli.Models;
 
 namespace InfrastructureCli.Services;
 
-public static class AwsCloudFormationService
+public class AwsCloudProvisioningFormationService : ICloudProvisioningService
 {
+    private readonly IConsole _console;
+    private readonly AwsCloudFormationTemplateOptions _templateOptions;
+
+    internal AwsCloudProvisioningFormationService(IConsole console, IReadOnlyDictionary<string, JsonElement> templateOptions)
+    {
+        _console = console;
+        _templateOptions = DeserializeTemplateOptions(templateOptions);
+    }
+    
     private class AwsCloudFormationException : Exception
     {
         internal AwsCloudFormationException(string message) : base(message)
@@ -127,26 +136,16 @@ public static class AwsCloudFormationService
         };
     }
 
-    public static AwsCloudFormationTemplateOptions DeserializeTemplateOptions(IReadOnlyDictionary<string, JsonElement> templateOptions)
+    private static AwsCloudFormationTemplateOptions DeserializeTemplateOptions(IReadOnlyDictionary<string, JsonElement> templateOptions)
     {
         return JsonService.Convert<IReadOnlyDictionary<string, JsonElement>, AwsCloudFormationTemplateOptions>(templateOptions);
     }
-
-    public static string GetStackName(AwsCloudFormationTemplateOptions templateOptions)
-    {
-        return templateOptions.StackName ?? throw new ArgumentException("Missing Required StackName Template Option.", nameof(templateOptions));
-    }
-
-    private static List<string> GetCapabilities(AwsCloudFormationTemplateOptions templateOptions)
-    {
-        return templateOptions.Capabilities?.ToList() ?? new List<string>();
-    }
-
-    private static bool GetUseChangeSet(AwsCloudFormationTemplateOptions templateOptions)
-    {
-        return templateOptions.UseChangeSet ?? false;
-    }
     
+    private static string GetTemplateBody(JsonElement template)
+    {
+        return JsonService.Serialize(template);
+    }
+
     private static async Task<Dictionary<string, string>> GetExportedOutputs(List<string> neededExports)
     {
         var exports = new Dictionary<string, string>();
@@ -183,21 +182,46 @@ public static class AwsCloudFormationService
         return exports;
     }
 
-    private static async Task<List<Parameter>> GetImportParameters(IConsole console, AwsCloudFormationTemplateOptions templateOptions)
+    private static string GenerateChangeSetName()
+    {
+        var dateTime = DateTime.UtcNow;
+        var guid = Guid.NewGuid();
+
+        return $"on--{dateTime:yyyy-M-d}--at--{dateTime:h-mm-ss-tt}--{guid}";
+    }
+
+
+    
+    private string GetStackName()
+    {
+        return _templateOptions.StackName ?? throw new ArgumentException("Missing Required StackName Template Option.", nameof(_templateOptions.StackName));
+    }
+
+    private List<string> GetCapabilities()
+    {
+        return _templateOptions.Capabilities?.ToList() ?? new List<string>();
+    }
+
+    private bool GetUseChangeSet()
+    {
+        return _templateOptions.UseChangeSet ?? false;
+    }
+    
+    private async Task<List<Parameter>> GetImportParameters()
     {
         var neededExports = new List<string>();
 
-        if (templateOptions.ImportParameters is not null)
+        if (_templateOptions.ImportParameters is not null)
         {
-            foreach (var (_, exportName) in templateOptions.ImportParameters)
+            foreach (var (_, exportName) in _templateOptions.ImportParameters)
             {
                 neededExports.Add(exportName);
             }
         }
 
-        if (templateOptions.ImportParameterLists is not null)
+        if (_templateOptions.ImportParameterLists is not null)
         {
-            foreach (var (_, exportNames) in templateOptions.ImportParameterLists)
+            foreach (var (_, exportNames) in _templateOptions.ImportParameterLists)
             {
                 neededExports.AddRange(exportNames);
             }
@@ -212,9 +236,9 @@ public static class AwsCloudFormationService
 
         var exportedOutputs = await GetExportedOutputs(neededExports);
 
-        if (templateOptions.ImportParameters is not null)
+        if (_templateOptions.ImportParameters is not null)
         {
-            foreach (var (parameterName, exportName) in templateOptions.ImportParameters)
+            foreach (var (parameterName, exportName) in _templateOptions.ImportParameters)
             {
                 var exportValue = exportedOutputs.GetValueOrDefault(exportName, "")!;
 
@@ -222,9 +246,9 @@ public static class AwsCloudFormationService
             }
         }
 
-        if (templateOptions.ImportParameterLists is not null)
+        if (_templateOptions.ImportParameterLists is not null)
         {
-            foreach (var (parameterName, exportNames) in templateOptions.ImportParameterLists)
+            foreach (var (parameterName, exportNames) in _templateOptions.ImportParameterLists)
             {
                 var exportValues = exportNames
                     .Select(exportName => exportedOutputs.GetValueOrDefault(exportName, "")!);
@@ -236,9 +260,9 @@ public static class AwsCloudFormationService
         return importedParameters;
     }
 
-    private static List<Tag> GetTags(AwsCloudFormationTemplateOptions templateOptions)
+    private List<Tag> GetTags()
     {
-        return templateOptions
+        return _templateOptions
             .Tags?
             .Select(tag => new Tag
             {
@@ -248,16 +272,16 @@ public static class AwsCloudFormationService
             .ToList() ?? new List<Tag>();
     }
 
-    private static async Task<List<Parameter>> GetParameters(IConsole console, AwsCloudFormationTemplateOptions templateOptions, Dictionary<string, string> cliParameters)
+    private async Task<List<Parameter>> GetParameters(Dictionary<string, string> cliParameters)
     {
-        var importParameters = await GetImportParameters(console, templateOptions);
+        var importParameters = await GetImportParameters();
 
         return cliParameters.Select(GetParameter).Concat(importParameters).ToList();
     }
 
-    private static async Task<List<Parameter>> GetParameters(IConsole console, AwsCloudFormationTemplateOptions templateOptions, Dictionary<string, string> parameters, Stack stack)
+    private async Task<List<Parameter>> GetParameters(Dictionary<string, string> parameters, Stack stack)
     {
-        var parameterDictionary = (await GetParameters(console, templateOptions, parameters))
+        var parameterDictionary = (await GetParameters(parameters))
             .ToDictionary(parameter => parameter.ParameterKey);
             
         foreach (var parameter in stack.Parameters.Where(parameter => parameterDictionary.ContainsKey(parameter.ParameterKey) == false))
@@ -267,15 +291,10 @@ public static class AwsCloudFormationService
             
         return parameterDictionary.Values.ToList();
     }
-
-    private static string GetTemplateBody(JsonElement template)
+    
+    private async Task<Stack?> GetStack()
     {
-        return JsonService.Serialize(template);
-    }
-
-    private static async Task<Stack?> GetStack(AwsCloudFormationTemplateOptions templateOptions)
-    {
-        var stackName = GetStackName(templateOptions);
+        var stackName = GetStackName();
         
         try
         {
@@ -294,47 +313,39 @@ public static class AwsCloudFormationService
         }
     }
 
-    private static void LogParameters(IConsole console, List<Parameter> parameters)
+    private void LogParameters(List<Parameter> parameters)
     {
-        console.Out.WriteLine("Parameters:");
+        _console.Out.WriteLine("Parameters:");
                 
         foreach (var parameter in parameters)
         {
-            console.Out.WriteLine(parameter.UsePreviousValue
+            _console.Out.WriteLine(parameter.UsePreviousValue
                 ? $"{parameter.ParameterKey} = (Use Previous Value)"
                 : $"{parameter.ParameterKey} = {parameter.ParameterValue}");
         }
 
-        console.Out.WriteLine();
+        _console.Out.WriteLine();
     }
 
-    private static void LogTemplateBody(IConsole console, string templateBody)
+    private void LogTemplateBody(string templateBody)
     {      
-        console.Out.WriteLine("Template Body:");
+        _console.Out.WriteLine("Template Body:");
                 
-        console.Out.WriteLine(templateBody);
+        _console.Out.WriteLine(templateBody);
 
-        console.Out.WriteLine();
+        _console.Out.WriteLine();
     }
 
-    private static string GenerateChangeSetName()
-    {
-        var dateTime = DateTime.UtcNow;
-        var guid = Guid.NewGuid();
-
-        return $"on--{dateTime:yyyy-M-d}--at--{dateTime:h-mm-ss-tt}--{guid}";
-    }
-    
-    private static async Task<bool> WaitForStatusChange(bool waitNext, IConsole console, AwsCloudFormationTemplateOptions templateOptions, string? successStatus, params string[] loopStatuses)
+    private async Task<bool> WaitForStatusChange(bool waitNext, string? successStatus, params string[] loopStatuses)
     {
         var currentStatus = loopStatuses[0];
             
         while (loopStatuses.Contains(currentStatus))
-        {
-            console.WriteLine("Wait for 30 seconds");
-                
+        { 
             if (waitNext)
             {
+                _console.WriteLine("Wait for 30 seconds");
+                
                 await Task.Delay(TimeSpan.FromSeconds(30));
             }
             else
@@ -342,7 +353,7 @@ public static class AwsCloudFormationService
                 waitNext = true;
             }
                 
-            var stack = await GetStack(templateOptions);
+            var stack = await GetStack();
 
             if (stack == null)
             {
@@ -351,23 +362,22 @@ public static class AwsCloudFormationService
 
             currentStatus = stack.StackStatus;
                 
-            console.WriteLine($"Status is {currentStatus}");
+            _console.WriteLine($"Status is {currentStatus}");
         }
 
         return successStatus == currentStatus;
     }
 
-
-    private static async Task<bool> CreateStack(IConsole console, DeployOptions options, AwsCloudFormationTemplateOptions templateOptions)
+    private async Task<bool> CreateStack(DeployOptions deployOptions)
     {
         var request = new CreateStackRequest
         {
-            StackName = GetStackName(templateOptions),
-            Capabilities = GetCapabilities(templateOptions),
-            Tags = GetTags(templateOptions),
+            StackName = GetStackName(),
+            Capabilities = GetCapabilities(),
+            Tags = GetTags(),
             EnableTerminationProtection = OnCreateWithoutChangeSet.EnableTerminationProtection,
-            TemplateBody = GetTemplateBody(options.Template),
-            Parameters = await GetParameters(console, templateOptions, options.Parameters)
+            TemplateBody = GetTemplateBody(deployOptions.Template),
+            Parameters = await GetParameters(deployOptions.Parameters)
         };
 
         if (OnCreateWithoutChangeSet.DisableRollback)
@@ -379,8 +389,8 @@ public static class AwsCloudFormationService
             request.OnFailure = OnCreateWithoutChangeSet.OnFailure;
         }
 
-        LogParameters(console, request.Parameters);
-        LogTemplateBody(console, request.TemplateBody);
+        LogParameters(request.Parameters);
+        LogTemplateBody(request.TemplateBody);
 
         var response = await Client.CreateStackAsync(request);
             
@@ -389,50 +399,50 @@ public static class AwsCloudFormationService
             return false;
         }
             
-        return await WaitForStatusChange(true, console, templateOptions, SuccessfulCreateStatus, WaitToEndCreateStatuses);
+        return await WaitForStatusChange(true, SuccessfulCreateStatus, WaitToEndCreateStatuses);
     }
 
-    private static async Task<bool> CreateStackWithChangeSet(IConsole console, DeployOptions options, AwsCloudFormationTemplateOptions templateOptions)
+    private async Task<bool> CreateStackWithChangeSet(DeployOptions deployOptions)
     {
         var request = new CreateChangeSetRequest
         {
             ChangeSetType = ChangeSetType.CREATE,
             ChangeSetName = GenerateChangeSetName(),
-            StackName = GetStackName(templateOptions),
-            Capabilities = GetCapabilities(templateOptions),
-            Tags = GetTags(templateOptions),
-            TemplateBody = GetTemplateBody(options.Template),
-            Parameters = await GetParameters(console, templateOptions, options.Parameters)
+            StackName = GetStackName(),
+            Capabilities = GetCapabilities(),
+            Tags = GetTags(),
+            TemplateBody = GetTemplateBody(deployOptions.Template),
+            Parameters = await GetParameters(deployOptions.Parameters)
         };
             
-        LogParameters(console, request.Parameters);
-        LogTemplateBody(console, request.TemplateBody);
+        LogParameters(request.Parameters);
+        LogTemplateBody(request.TemplateBody);
 
         var response = await Client.CreateChangeSetAsync(request);
 
         return response.HttpStatusCode == HttpStatusCode.OK;
     }
 
-    private static async Task<bool> UpdateStack(IConsole console, Stack stack, DeployOptions options, AwsCloudFormationTemplateOptions templateOptions)
+    private async Task<bool> UpdateStack(Stack stack, DeployOptions options)
     {
         try
         {
-            await WaitForStatusChange(false, console, templateOptions, null, WaitToBeginUpdateStatuses);
+            await WaitForStatusChange(false,null, WaitToBeginUpdateStatuses);
             
             var request = new UpdateStackRequest
             {
-                StackName = GetStackName(templateOptions),
-                Capabilities = GetCapabilities(templateOptions),
-                Tags = GetTags(templateOptions),
+                StackName = GetStackName(),
+                Capabilities = GetCapabilities(),
+                Tags = GetTags(),
                 TemplateBody = GetTemplateBody(options.Template),
                 DisableRollback = OnUpdateWithoutChangeSet.DisableRollback,
                 Parameters = await (options.UsePreviousParameters
-                    ? GetParameters(console, templateOptions, options.Parameters, stack)
-                    : GetParameters(console, templateOptions, options.Parameters))
+                    ? GetParameters(options.Parameters, stack)
+                    : GetParameters(options.Parameters))
             };
             
-            LogParameters(console, request.Parameters);
-            LogTemplateBody(console, request.TemplateBody);
+            LogParameters(request.Parameters);
+            LogTemplateBody(request.TemplateBody);
 
             var response = await Client.UpdateStackAsync(request);
 
@@ -441,17 +451,17 @@ public static class AwsCloudFormationService
                 return false;
             }
 
-            return await WaitForStatusChange(true, console, templateOptions, SuccessfulUpdateStatus, WaitToEndUpdateStatuses);
+            return await WaitForStatusChange(true, SuccessfulUpdateStatus, WaitToEndUpdateStatuses);
         }
         catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
         {
-            console.Out.WriteLine("No updates are to be performed.");
+            _console.Out.WriteLine("No updates are to be performed.");
                 
             return true;
         }
     }
 
-    private static async Task<bool> UpdateStackWithChangeSet(IConsole console, Stack stack, DeployOptions options, AwsCloudFormationTemplateOptions templateOptions)
+    private async Task<bool> UpdateStackWithChangeSet(Stack stack, DeployOptions options)
     {
         try
         {
@@ -459,17 +469,17 @@ public static class AwsCloudFormationService
             {
                 ChangeSetType = ChangeSetType.UPDATE,
                 ChangeSetName = GenerateChangeSetName(),
-                StackName = GetStackName(templateOptions),
-                Capabilities = GetCapabilities(templateOptions),
-                Tags = GetTags(templateOptions),
+                StackName = GetStackName(),
+                Capabilities = GetCapabilities(),
+                Tags = GetTags(),
                 TemplateBody = GetTemplateBody(options.Template),
                 Parameters = await (options.UsePreviousParameters
-                    ? GetParameters(console, templateOptions, options.Parameters, stack)
-                    : GetParameters(console, templateOptions, options.Parameters))
+                    ? GetParameters(options.Parameters, stack)
+                    : GetParameters(options.Parameters))
             };
             
-            LogParameters(console, request.Parameters);
-            LogTemplateBody(console, request.TemplateBody);
+            LogParameters(request.Parameters);
+            LogTemplateBody(request.TemplateBody);
 
             var response = await Client.CreateChangeSetAsync(request);
 
@@ -477,17 +487,15 @@ public static class AwsCloudFormationService
         }
         catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
         {
-            console.Out.WriteLine("No updates are to be performed.");
+            _console.Out.WriteLine("No updates are to be performed.");
                 
             return true;
         }
     }
 
-    internal static async Task<string?> Get(GetOptions getOptions)
+    async Task<string?> ICloudProvisioningService.GetProperty(GetOptions getOptions)
     {
-        var templateOptions = DeserializeTemplateOptions(getOptions.TemplateOptions);
-
-        var stack = await GetStack(templateOptions);
+        var stack = await GetStack();
 
         return stack?
             .Outputs
@@ -495,36 +503,47 @@ public static class AwsCloudFormationService
             .OutputValue;
     }
         
-    internal static async Task<bool> Deployed(IReadOnlyDictionary<string, JsonElement> templateOptionsRaw)
+    async Task<bool> ICloudProvisioningService.IsDeployed()
     {
-        var templateOptions = DeserializeTemplateOptions(templateOptionsRaw);
-
-        var stack = await GetStack(templateOptions);
+        var stack = await GetStack();
 
         return stack != null;
     }
-    
-    internal static async Task<bool> Deploy(IConsole console, DeployOptions deployOptions)
+
+    async Task<bool> ICloudProvisioningService.IsResourceDeployed(string resourceId)
     {
-        var templateOptions = DeserializeTemplateOptions(deployOptions.TemplateOptions);
+        var request = new DescribeStackResourceRequest
+        {
+            StackName = GetStackName(),
+            LogicalResourceId = resourceId,
+        };
 
-        var stack = await GetStack(templateOptions);
+        var response = await Client.DescribeStackResourceAsync(request);
 
-        if (GetUseChangeSet(templateOptions))
+        // At the time when I wrote this, response is null if the resource doesn't exist,
+        // which is weird.. I expected either an exception or 400+ status code or.. something.
+        return response != null;
+    }
+    
+    async Task<bool> ICloudProvisioningService.Deploy(DeployOptions deployOptions)
+    {
+        var stack = await GetStack();
+
+        if (GetUseChangeSet())
         {
             if (stack != null)
             {
-                return await UpdateStackWithChangeSet(console, stack, deployOptions, templateOptions);
+                return await UpdateStackWithChangeSet(stack, deployOptions);
             }
             
-            return await CreateStackWithChangeSet(console, deployOptions, templateOptions);
+            return await CreateStackWithChangeSet(deployOptions);
         }
         
         if (stack != null)
         {
-            return await UpdateStack(console, stack, deployOptions, templateOptions);
+            return await UpdateStack(stack, deployOptions);
         }
 
-        return await CreateStack(console, deployOptions, templateOptions);
+        return await CreateStack(deployOptions);
     }
 }

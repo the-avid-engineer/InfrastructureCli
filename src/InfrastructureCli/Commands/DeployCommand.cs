@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.IO;
 using System.CommandLine.NamingConventionBinder;
 using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 using InfrastructureCli.Models;
-using InfrastructureCli.Rewriters;
 using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Commands;
@@ -45,37 +42,13 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
             return 1;
         }
 
-        var region = configuration.TemplateType switch
-        {
-            TemplateType.AwsCloudFormation => AwsService.GetRegionName(),
-            _ => throw new NotSupportedException()
-        };
-
-        var rootRewriter = RootRewriter.Create
+        var (rootRewriter, cloudProvisioningService) = await GetProvisioningTools
         (
-            configurationsFile.GlobalAttributes,
-            configurationsFile.GlobalRegionAttributes,
-            configuration.Attributes,
-            configuration.RegionAttributes,
-            arguments.ConfigurationsFileName.DirectoryName!,
-            region
+            configurationsFile,
+            configuration,
+            arguments.Console,
+            arguments.ConfigurationsFileName.DirectoryName!
         );
-
-        var templateOptions = JsonService.Convert<JsonElement, Dictionary<string, JsonElement>>
-        (
-            rootRewriter.Rewrite(configuration.TemplateOptions)
-        );
-
-        var deployed = configuration.TemplateType switch
-        {
-            TemplateType.AwsCloudFormation => await AwsCloudFormationService.Deployed(templateOptions),
-            _ => throw new NotSupportedException()
-        };
-
-        rootRewriter = rootRewriter.PrependToBottomUp(new GetAttributeValueRewriter<object>(new Dictionary<string, object>
-        {
-            ["::DeployType"] = deployed ? "::Update" : "::Create"
-        }));
 
         var template = rootRewriter.Rewrite(configuration.Template);
 
@@ -88,17 +61,12 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
 
         var deployOptions = new DeployOptions
         (
-            templateOptions,
             template,
             arguments.UsePreviousParameters,
             arguments.Parameters
         );
-            
-        var success = configuration.TemplateType switch
-        {
-            TemplateType.AwsCloudFormation => await AwsCloudFormationService.Deploy(arguments.Console, deployOptions),
-            _ => throw new NotSupportedException()
-        };
+
+        var success = await cloudProvisioningService.Deploy(deployOptions);
 
         return success ? 0 : 2;
     }
