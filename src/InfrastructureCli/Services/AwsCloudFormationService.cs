@@ -12,12 +12,12 @@ using InfrastructureCli.Models;
 
 namespace InfrastructureCli.Services;
 
-public class AwsCloudProvisioningFormationService : ICloudProvisioningService
+public class AwsCloudFormationService : ICloudProvisioningService
 {
     private readonly IConsole _console;
     private readonly AwsCloudFormationTemplateOptions _templateOptions;
 
-    internal AwsCloudProvisioningFormationService(IConsole console, IReadOnlyDictionary<string, JsonElement> templateOptions)
+    internal AwsCloudFormationService(IConsole console, IReadOnlyDictionary<string, JsonElement> templateOptions)
     {
         _console = console;
         _templateOptions = DeserializeTemplateOptions(templateOptions);

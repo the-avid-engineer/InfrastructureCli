@@ -22,6 +22,6 @@ public class AwsService : ICloudProviderService
     ICloudProvisioningService ICloudProviderService.GetProvisioningService(
         IReadOnlyDictionary<string, JsonElement> templateOptions)
     {
-        return new AwsCloudProvisioningFormationService(_console, templateOptions);
+        return new AwsCloudFormationService(_console, templateOptions);
     }
 }
