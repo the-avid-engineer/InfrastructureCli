@@ -66,6 +66,17 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
             rootRewriter.Rewrite(configuration.TemplateOptions)
         );
 
+        var deployed = configuration.TemplateType switch
+        {
+            TemplateType.AwsCloudFormation => await AwsCloudFormationService.Deployed(templateOptions),
+            _ => throw new NotSupportedException()
+        };
+
+        rootRewriter = rootRewriter.PrependToBottomUp(new GetAttributeValueRewriter<object>(new Dictionary<string, object>
+        {
+            ["::DeployType"] = deployed ? "::Update" : "::Create"
+        }));
+
         var template = rootRewriter.Rewrite(configuration.Template);
 
         if (arguments.FinalTemplateFileName != null)

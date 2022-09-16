@@ -389,6 +389,14 @@ Would be rewritten as:
 
 WARNING: Due to the this function being processed bottom-up, you should not rely on the output of this function (the implicit version) as an argument in another function call (e.g., `@Fn::IncludeFile`) because that dependent function _might_ evaluate before the attribute value is available. In these cases, it is advised to use the explicit function. 
 
+#### @Fn::GetAttributeValue (Special Attributes)
+
+There are special attributes that may be useful for certain templates.
+
+| Name           | Description                                                                                              | Values                                                                                                                                                         |
+|----------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ::DeployAction | The type of deployment for the chosen configuration. Only available in `Template`, not `TemplateOptions` | **::Create**<br/>Indicates that the configuration has not been deployed <br/><br/> **::Update**<br/>Indicates that the configuration has already been deployed |
+
 #### @Fn::MapElements
 
 An object with a single key of `@Fn::MapElements` and a value of an array with two elements, the first being an array of anything and the second being anything, is recognized by this rewriter. Each element of the first element, the array, is mapped to the second element. In addition to any attributes already present, you may use the following attributes as well:

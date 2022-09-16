@@ -495,6 +495,15 @@ public static class AwsCloudFormationService
             .OutputValue;
     }
         
+    internal static async Task<bool> Deployed(IReadOnlyDictionary<string, JsonElement> templateOptionsRaw)
+    {
+        var templateOptions = DeserializeTemplateOptions(templateOptionsRaw);
+
+        var stack = await GetStack(templateOptions);
+
+        return stack != null;
+    }
+    
     internal static async Task<bool> Deploy(IConsole console, DeployOptions deployOptions)
     {
         var templateOptions = DeserializeTemplateOptions(deployOptions.TemplateOptions);
