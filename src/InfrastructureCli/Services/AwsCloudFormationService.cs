@@ -512,9 +512,16 @@ public class AwsCloudFormationService : ICloudProvisioningService
 
     async Task<bool> ICloudProvisioningService.IsResourceDeployed(string resourceId)
     {
+        var stack = await GetStack();
+        
+        if (stack == null)
+        {
+            return false;
+        }
+        
         var request = new DescribeStackResourceRequest
         {
-            StackName = GetStackName(),
+            StackName = stack.StackName,
             LogicalResourceId = resourceId,
         };
 
