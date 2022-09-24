@@ -519,17 +519,23 @@ public class AwsCloudFormationService : ICloudProvisioningService
             return false;
         }
         
-        var request = new DescribeStackResourceRequest
+        try
         {
-            StackName = stack.StackName,
-            LogicalResourceId = resourceId,
-        };
+            var request = new DescribeStackResourceRequest
+            {
+                StackName = stack.StackName,
+                LogicalResourceId = resourceId,
+            };
 
-        var response = await Client.DescribeStackResourceAsync(request);
+            var response = await Client.DescribeStackResourceAsync(request);
 
-        // At the time when I wrote this, response is null if the resource doesn't exist,
-        // which is weird.. I expected either an exception or 400+ status code or.. something.
-        return response != null;
+            return response.HttpStatusCode == HttpStatusCode.OK;
+        }
+        catch (Exception exception)
+            when (exception.Message == $"Resource {resourceId} does not exist for stack {stack.StackName}")
+        {
+            return false;
+        }
     }
     
     async Task<bool> ICloudProvisioningService.Deploy(DeployOptions deployOptions)
