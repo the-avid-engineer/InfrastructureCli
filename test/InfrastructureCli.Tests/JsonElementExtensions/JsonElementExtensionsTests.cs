@@ -60,12 +60,14 @@ public class JsonElementExtensionsTests
         );
             
         var actualOutput = rootRewriter.Rewrite(input);
+        var isValidOutput = JsonService.Validate(actualOutput, out var hintPath);
 
         var formattedExpectedOutput = JsonService.Serialize(expectedOutput).Replace(@"\r\n", @"\n");
         var formattedActualOutput = JsonService.Serialize(actualOutput).Replace(@"\r\n", @"\n");
 
         // ASSERT
 
+        isValidOutput.ShouldBeTrue($"Output is not valid JSON! See {hintPath}");
         formattedActualOutput.ShouldBe(formattedExpectedOutput);
     }
 }

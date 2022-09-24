@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -28,6 +31,67 @@ public static class JsonService
             new JsonStringEnumConverter()
         }
     };
+
+    public static bool Validate(JsonElement jsonElement, [NotNullWhen(false)] out string? hintPath)
+    {
+        return ValidateUnknown(jsonElement, "$", out hintPath);
+    }
+    
+    private static bool ValidateUnknown(JsonElement jsonElement, string parentPath, [NotNullWhen(false)] out string? hintPath)
+    {
+        hintPath = null;
+        
+        return jsonElement.ValueKind switch
+        {
+            JsonValueKind.Object => ValidateObject(jsonElement, parentPath, out hintPath),
+            JsonValueKind.Array => ValidateArray(jsonElement, parentPath, out hintPath),
+            _ => true
+        };
+    }
+
+    private static bool ValidateArray(JsonElement jsonArray, string parentPath, [NotNullWhen(false)] out string? hintPath)
+    {
+        hintPath = null;
+
+        var jsonElements = jsonArray.EnumerateArray().ToArray();
+
+        for (var i = 0; i < jsonElements.Length; i++)
+        {
+            var jsonElement = jsonElements[i];
+            
+            if (!ValidateUnknown(jsonElement, $"{parentPath}[{i}]", out hintPath))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ValidateObject(JsonElement jsonObject, string parentPath, [NotNullWhen(false)] out string? hintPath)
+    {
+        hintPath = null;
+        
+        var propertyNames = new HashSet<string>();
+        
+        foreach (var jsonProperty in jsonObject.EnumerateObject())
+        {
+            var thisPath = $"{parentPath}['{jsonProperty.Name}']";
+            
+            if (!propertyNames.Add(jsonProperty.Name))
+            {
+                hintPath = thisPath;
+                return false;
+            }
+
+            if (!ValidateUnknown(jsonProperty.Value, thisPath, out hintPath))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     public static TOut Deserialize<TOut>(string json)
     {

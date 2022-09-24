@@ -56,6 +56,12 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
         {
             await FileService.SerializeToFile(template, arguments.FinalTemplateFileName);
         }
+
+        if (!JsonService.Validate(template, out var hintPath))
+        {
+            arguments.Console.WriteLine($"Template is not valid JSON! See {hintPath}");
+            return 4;
+        }
             
         arguments.Console.Out.WriteLine($"UsePreviousParameters: {arguments.UsePreviousParameters}");
 
