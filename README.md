@@ -27,6 +27,24 @@ Run with option `--help` to see all available commands.
 
 ---
 
+## The `get` command
+
+This is a command that can be used to pull information about a deployment into the CLI. When the command succeeds, it will write a string to the standard output, which you can then use in whatever way you see fit. The implementation depends on the Cloud provider.
+
+### AWS CloudFormation
+
+#### Special Properties
+
+| Value       | Description           |
+|-------------|-----------------------|
+| ::StackName | The name of the stack |
+
+#### General Properties
+
+If the property specified is not a special property, it should be the logical id (not the export id) of an [Output](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html) in the stack.
+
+---
+
 ## Copying resources with ease
 
 You may easily copy a set of embedded files using the `EmbeddedResourcesService.Copy` method. The first argument is the directory where you want the files to be copied to. The second argument is the assembly containing the embedded resources. The third argument is an array of resource name prefixes you want to copy to the output directory. Dots (`.`) are treated as folders, and any dots after the specified prefix will be used as the folder structure when copying the files. The prefix part of the name _will not_ be included in the file structure. The exception is the _last_ dot, which will be treated as the file extension. Multiple dots in a file name are not supported by this service.
@@ -331,6 +349,38 @@ Assuming a macro higher in the template is defined with this as the first argume
 
 The following functions are evaluated last, and run through the tree bottom-up.
 
+#### @Fn::GetResourceDeployType
+
+If the template needs to depend on the existence of a resource (e.g., a certain property is only set on creation of the resource, but not on updates), you can use this function to determine if the resource already exists or not.
+
+Usage:
+
+```json
+{
+    "@Fn::GetPropertyValue": [
+        {
+            "::Create": "It's a new resource!",
+            "::Update": "It's an existing resource!"
+        },
+        {
+            "@Fn::GetResourceDeployType": "ResourceId"
+        }
+    ]
+}
+```
+
+If the resource already exists, this would be rewritten as:
+
+```json
+"It's an existing resource!"
+```
+
+Otherwise, it would be rewritten as:
+
+```json
+"It's a new resource!"
+```
+
 #### @Fn::GetAttributeValue (Explicit)
 
 Attributes from the deployment configuration can be accessed with this rewriter. An object with a single key of `@Fn::GetAttributeValue` and a value of a string is recognized by this rewriter.
@@ -394,8 +444,8 @@ WARNING: Due to the this function being processed bottom-up, you should not rely
 There are special attributes that may be useful for certain templates.
 
 | Name           | Description                                                                                              | Values                                                                                                                                                         |
-|----------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ::DeployAction | The type of deployment for the chosen configuration. Only available in `Template`, not `TemplateOptions` | **::Create**<br/>Indicates that the configuration has not been deployed <br/><br/> **::Update**<br/>Indicates that the configuration has already been deployed |
+|--------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ::DeployType | The type of deployment for the chosen configuration. Only available in `Template`, not `TemplateOptions` | **::Create**<br/>Indicates that the configuration has not been deployed <br/><br/> **::Update**<br/>Indicates that the configuration has already been deployed |
 
 #### @Fn::MapElements
 
