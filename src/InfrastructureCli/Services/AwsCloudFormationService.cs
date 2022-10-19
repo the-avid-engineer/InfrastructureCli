@@ -116,7 +116,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
     
     private static class ChangeSetStatuses
     {
-        public static ChangeSetStatus SuccessfulCreate = ChangeSetStatus.CREATE_COMPLETE;
+        public static readonly ChangeSetStatus SuccessfulCreate = ChangeSetStatus.CREATE_COMPLETE;
 
         public static readonly ChangeSetStatus[] WaitToEndCreate =
         {
