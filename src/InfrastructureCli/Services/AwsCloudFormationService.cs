@@ -113,6 +113,16 @@ public class AwsCloudFormationService : ICloudProvisioningService
         };
     }
     
+    private static class ChangeSetStatuses
+    {
+        public static ChangeSetStatus SuccessfulCreate = ChangeSetStatus.CREATE_COMPLETE;
+
+        public static readonly ChangeSetStatus[] WaitToEndCreate =
+        {
+            ChangeSetStatus.CREATE_IN_PROGRESS
+        };
+    }
+    
     private static readonly IAmazonCloudFormation Client = new AmazonCloudFormationClient();
 
     private static Parameter GetParameter(string parameterName, string parameterValue)
@@ -315,6 +325,28 @@ public class AwsCloudFormationService : ICloudProvisioningService
         }
     }
 
+    private async Task<ChangeSetStatus?> GetChangeSetStatus(string changeSetName)
+    {
+        var stackName = GetStackName();
+        
+        try
+        {
+            var request = new DescribeChangeSetRequest
+            {
+                StackName = stackName,
+                ChangeSetName = changeSetName
+            };
+
+            var response = await Client.DescribeChangeSetAsync(request);
+
+            return response.Status;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private void LogParameters(List<Parameter> parameters)
     {
         _console.Out.WriteLine("Parameters:");
@@ -365,6 +397,32 @@ public class AwsCloudFormationService : ICloudProvisioningService
             currentStatus = stack.StackStatus;
                 
             _console.WriteLine($"Stack status is {currentStatus}");
+        }
+
+        return successStatus == currentStatus;
+    }
+    
+    private async Task<bool> WaitForChangeSetStatusChange(string changeSetName, ChangeSetStatus successStatus,
+        params ChangeSetStatus[] loopStatuses)
+    {
+        var currentStatus = loopStatuses[0];
+
+        while (loopStatuses.Contains(currentStatus))
+        {
+            _console.WriteLine("Wait for 15 seconds");
+
+            await Task.Delay(TimeSpan.FromSeconds(15));
+
+            var changeSetStatus = await GetChangeSetStatus(changeSetName);
+
+            if (changeSetStatus == null)
+            {
+                throw new AwsCloudFormationException("ChangeSet does not exist.");
+            }
+
+            currentStatus = changeSetStatus.Value;
+        
+            _console.WriteLine($"ChangeSet status is {currentStatus.Value}");
         }
 
         return successStatus == currentStatus;
