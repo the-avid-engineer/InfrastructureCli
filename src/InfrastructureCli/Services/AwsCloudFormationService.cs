@@ -567,6 +567,8 @@ public class AwsCloudFormationService : ICloudProvisioningService
             _console.Out.WriteLine("ChangeSet already exists.");
             return false;
         }
+        
+        await WaitForStackStatusChange(false, null, StackStatuses.WaitToBeginUpdate);
 
         var request = new CreateChangeSetRequest
         {
