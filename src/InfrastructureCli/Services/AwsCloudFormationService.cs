@@ -599,6 +599,11 @@ public class AwsCloudFormationService : ICloudProvisioningService
     {
         var stack = await GetStack();
 
+        if (getOptions.PropertyName == "::StackName")
+        {
+            return stack?.StackName;
+        }
+
         return stack?
             .Outputs
             .SingleOrDefault(output => output.OutputKey == getOptions.PropertyName)?
