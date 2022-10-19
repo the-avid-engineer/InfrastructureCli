@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.IO;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -85,31 +86,43 @@ public class AwsCloudFormationService : ICloudProvisioningService
         }
     }
 
-    private const string SuccessfulCreateStatus = "CREATE_COMPLETE";
-
-    private static readonly string[] WaitToEndCreateStatuses =
+    private static class StackStatuses
     {
-        "CREATE_IN_PROGRESS"
-    };
+        public static readonly StackStatus SuccessfulCreate = StackStatus.CREATE_COMPLETE;
 
-    private static readonly string[] WaitToBeginUpdateStatuses =
-    {
-        "CREATE_IN_PROGRESS",
-        "REVIEW_IN_PROGRESS",
-        "ROLLBACK_IN_PROGRESS",
-        "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
-        "UPDATE_IN_PROGRESS",
-        "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
-        "UPDATE_ROLLBACK_IN_PROGRESS"
-    };
+        public static readonly StackStatus[] WaitToEndCreate =
+        {
+            StackStatus.CREATE_IN_PROGRESS,
+        };
+        public static readonly StackStatus[] WaitToBeginUpdate =
+        {
+            StackStatus.CREATE_IN_PROGRESS,
+            StackStatus.REVIEW_IN_PROGRESS,
+            StackStatus.ROLLBACK_IN_PROGRESS,
+            StackStatus.UPDATE_COMPLETE_CLEANUP_IN_PROGRESS,
+            StackStatus.UPDATE_IN_PROGRESS,
+            StackStatus.UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS,
+            StackStatus.UPDATE_ROLLBACK_IN_PROGRESS,
+        };
 
-    private const string SuccessfulUpdateStatus = "UPDATE_COMPLETE";
+        public static readonly StackStatus SuccessfulUpdate = StackStatus.UPDATE_COMPLETE;
     
-    private static readonly string[] WaitToEndUpdateStatuses =
+        public static readonly StackStatus[] WaitToEndUpdate =
+        {
+            StackStatus.UPDATE_IN_PROGRESS,
+            StackStatus.UPDATE_COMPLETE_CLEANUP_IN_PROGRESS,
+        };
+    }
+    
+    private static class ChangeSetStatuses
     {
-        "UPDATE_IN_PROGRESS",
-        "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"
-    };    
+        public static readonly ChangeSetStatus SuccessfulCreate = ChangeSetStatus.CREATE_COMPLETE;
+
+        public static readonly ChangeSetStatus[] WaitToEndCreate =
+        {
+            ChangeSetStatus.CREATE_IN_PROGRESS
+        };
+    }
     
     private static readonly IAmazonCloudFormation Client = new AmazonCloudFormationClient();
 
@@ -182,8 +195,18 @@ public class AwsCloudFormationService : ICloudProvisioningService
         return exports;
     }
 
-    private static string GenerateChangeSetName()
+    private static bool GetChangeSetNameOption(DeployOptions deployOptions, [NotNullWhen(true)] out string? changeSetName)
     {
+        return deployOptions.Options.TryGetValue("ChangeSetName", out changeSetName);
+    }
+    
+    private static string GetChangeSetName(DeployOptions deployOptions)
+    {
+        if (GetChangeSetNameOption(deployOptions, out var changeSetName))
+        {
+            return changeSetName;
+        }
+        
         var dateTime = DateTime.UtcNow;
         var guid = Guid.NewGuid();
 
@@ -202,8 +225,13 @@ public class AwsCloudFormationService : ICloudProvisioningService
         return _templateOptions.Capabilities?.ToList() ?? new List<string>();
     }
 
-    private bool GetUseChangeSet()
+    private bool GetUseChangeSet(DeployOptions deployOptions)
     {
+        if (GetChangeSetNameOption(deployOptions, out _))
+        {
+            return true;
+        }
+        
         return _templateOptions.UseChangeSet ?? false;
     }
     
@@ -313,6 +341,28 @@ public class AwsCloudFormationService : ICloudProvisioningService
         }
     }
 
+    private async Task<ChangeSetStatus?> GetChangeSetStatus(string changeSetName)
+    {
+        var stackName = GetStackName();
+        
+        try
+        {
+            var request = new DescribeChangeSetRequest
+            {
+                StackName = stackName,
+                ChangeSetName = changeSetName
+            };
+
+            var response = await Client.DescribeChangeSetAsync(request);
+
+            return response.Status;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private void LogParameters(List<Parameter> parameters)
     {
         _console.Out.WriteLine("Parameters:");
@@ -336,7 +386,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
         _console.Out.WriteLine();
     }
 
-    private async Task<bool> WaitForStatusChange(bool waitNext, string? successStatus, params string[] loopStatuses)
+    private async Task<bool> WaitForStackStatusChange(bool waitNext, StackStatus? successStatus, params StackStatus[] loopStatuses)
     {
         var currentStatus = loopStatuses[0];
             
@@ -362,10 +412,43 @@ public class AwsCloudFormationService : ICloudProvisioningService
 
             currentStatus = stack.StackStatus;
                 
-            _console.WriteLine($"Status is {currentStatus}");
+            _console.WriteLine($"Stack status is {currentStatus}");
         }
 
         return successStatus == currentStatus;
+    }
+    
+    private async Task<bool> WaitForChangeSetStatusChange(string changeSetName, ChangeSetStatus successStatus,
+        params ChangeSetStatus[] loopStatuses)
+    {
+        var currentStatus = loopStatuses[0];
+
+        while (loopStatuses.Contains(currentStatus))
+        {
+            _console.WriteLine("Wait for 15 seconds");
+
+            await Task.Delay(TimeSpan.FromSeconds(15));
+
+            var changeSetStatus = await GetChangeSetStatus(changeSetName);
+
+            if (changeSetStatus == null)
+            {
+                throw new AwsCloudFormationException("ChangeSet does not exist.");
+            }
+
+            currentStatus = changeSetStatus.Value;
+        
+            _console.WriteLine($"ChangeSet status is {currentStatus.Value}");
+        }
+
+        return successStatus == currentStatus;
+    }
+
+    private async Task<bool> ChangeSetExists(string changeSetName)
+    {
+        var changeSetStatus = await GetChangeSetStatus(changeSetName);
+
+        return changeSetStatus != null;
     }
 
     private async Task<bool> CreateStack(DeployOptions deployOptions)
@@ -399,15 +482,23 @@ public class AwsCloudFormationService : ICloudProvisioningService
             return false;
         }
             
-        return await WaitForStatusChange(true, SuccessfulCreateStatus, WaitToEndCreateStatuses);
+        return await WaitForStackStatusChange(true, StackStatuses.SuccessfulCreate, StackStatuses.WaitToEndCreate);
     }
 
     private async Task<bool> CreateStackWithChangeSet(DeployOptions deployOptions)
     {
+        var changeSetName = GetChangeSetName(deployOptions);
+
+        if (await ChangeSetExists(changeSetName))
+        {
+            _console.Out.WriteLine("ChangeSet already exists.");
+            return false;
+        }
+        
         var request = new CreateChangeSetRequest
         {
             ChangeSetType = ChangeSetType.CREATE,
-            ChangeSetName = GenerateChangeSetName(),
+            ChangeSetName = changeSetName,
             StackName = GetStackName(),
             Capabilities = GetCapabilities(),
             Tags = GetTags(),
@@ -420,14 +511,20 @@ public class AwsCloudFormationService : ICloudProvisioningService
 
         var response = await Client.CreateChangeSetAsync(request);
 
-        return response.HttpStatusCode == HttpStatusCode.OK;
-    }
+        if (response.HttpStatusCode != HttpStatusCode.OK)
+        {
+            return false;
+        }
 
+        return await WaitForChangeSetStatusChange(changeSetName, ChangeSetStatuses.SuccessfulCreate,
+            ChangeSetStatuses.WaitToEndCreate);
+    }
+    
     private async Task<bool> UpdateStack(Stack stack, DeployOptions options)
     {
         try
         {
-            await WaitForStatusChange(false,null, WaitToBeginUpdateStatuses);
+            await WaitForStackStatusChange(false,null, StackStatuses.WaitToBeginUpdate);
             
             var request = new UpdateStackRequest
             {
@@ -451,7 +548,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
                 return false;
             }
 
-            return await WaitForStatusChange(true, SuccessfulUpdateStatus, WaitToEndUpdateStatuses);
+            return await WaitForStackStatusChange(true, StackStatuses.SuccessfulUpdate, StackStatuses.WaitToEndUpdate);
         }
         catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
         {
@@ -461,41 +558,51 @@ public class AwsCloudFormationService : ICloudProvisioningService
         }
     }
 
-    private async Task<bool> UpdateStackWithChangeSet(Stack stack, DeployOptions options)
+    private async Task<bool> UpdateStackWithChangeSet(Stack stack, DeployOptions deployOptions)
     {
-        try
-        {
-            var request = new CreateChangeSetRequest
-            {
-                ChangeSetType = ChangeSetType.UPDATE,
-                ChangeSetName = GenerateChangeSetName(),
-                StackName = GetStackName(),
-                Capabilities = GetCapabilities(),
-                Tags = GetTags(),
-                TemplateBody = GetTemplateBody(options.Template),
-                Parameters = await (options.UsePreviousParameters
-                    ? GetParameters(options.Parameters, stack)
-                    : GetParameters(options.Parameters))
-            };
-            
-            LogParameters(request.Parameters);
-            LogTemplateBody(request.TemplateBody);
+        var changeSetName = GetChangeSetName(deployOptions);
 
-            var response = await Client.CreateChangeSetAsync(request);
-
-            return response.HttpStatusCode != HttpStatusCode.OK;
-        }
-        catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
+        if (await ChangeSetExists(changeSetName))
         {
-            _console.Out.WriteLine("No updates are to be performed.");
-                
-            return true;
+            _console.Out.WriteLine("ChangeSet already exists.");
+            return false;
         }
+
+        var request = new CreateChangeSetRequest
+        {
+            ChangeSetType = ChangeSetType.UPDATE,
+            ChangeSetName = changeSetName,
+            StackName = GetStackName(),
+            Capabilities = GetCapabilities(),
+            Tags = GetTags(),
+            TemplateBody = GetTemplateBody(deployOptions.Template),
+            Parameters = await (deployOptions.UsePreviousParameters
+                ? GetParameters(deployOptions.Parameters, stack)
+                : GetParameters(deployOptions.Parameters))
+        };
+        
+        LogParameters(request.Parameters);
+        LogTemplateBody(request.TemplateBody);
+
+        var response = await Client.CreateChangeSetAsync(request);
+
+        if (response.HttpStatusCode != HttpStatusCode.OK)
+        {
+            return false;
+        }
+        
+        return await WaitForChangeSetStatusChange(changeSetName, ChangeSetStatuses.SuccessfulCreate,
+            ChangeSetStatuses.WaitToEndCreate);
     }
 
     async Task<string?> ICloudProvisioningService.GetProperty(GetOptions getOptions)
     {
         var stack = await GetStack();
+
+        if (getOptions.PropertyName == "::StackName")
+        {
+            return stack?.StackName;
+        }
 
         return stack?
             .Outputs
@@ -542,7 +649,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
     {
         var stack = await GetStack();
 
-        if (GetUseChangeSet())
+        if (GetUseChangeSet(deployOptions))
         {
             if (stack != null)
             {

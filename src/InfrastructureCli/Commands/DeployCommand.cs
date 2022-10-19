@@ -18,6 +18,7 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
         string ConfigurationKey,
         bool UsePreviousParameters,
         Dictionary<string, string> Parameters,
+        Dictionary<string, string> Options,
         FileInfo? FinalTemplateFileName
     );
         
@@ -69,7 +70,8 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
         (
             template,
             arguments.UsePreviousParameters,
-            arguments.Parameters
+            arguments.Parameters,
+            arguments.Options
         );
 
         var success = await cloudProvisioningService.Deploy(deployOptions);
@@ -77,11 +79,23 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
         return success ? 0 : 2;
     }
 
+    private static void AttachOptionsOption(Command parentCommand)
+    {
+        var parameters = new Option<Dictionary<string, string>>("--options", OptionService.ParseDictionary)
+        {
+            Description = "Use this to specify an option value."
+        };
+            
+        parameters.AddAlias("-o");
+            
+        parentCommand.AddOption(parameters);
+    }
+
     private static void AttachParametersOption(Command parentCommand)
     {
         var parameters = new Option<Dictionary<string, string>>("--parameters", OptionService.ParseDictionary)
         {
-            Description = "Use this to specify parameter values."
+            Description = "Use this to specify a parameter value."
         };
             
         parameters.AddAlias("-p");
@@ -121,6 +135,7 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
 
         AttachConfigurationKeyArgument(deployCommand);
         AttachParametersOption(deployCommand);
+        AttachOptionsOption(deployCommand);
         AttachUsePreviousParametersOption(deployCommand);
 
         AttachConfigurationsFileNameOption(deployCommand);
