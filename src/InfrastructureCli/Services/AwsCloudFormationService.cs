@@ -444,6 +444,13 @@ public class AwsCloudFormationService : ICloudProvisioningService
         return successStatus == currentStatus;
     }
 
+    private async Task<bool> ChangeSetExists(string changeSetName)
+    {
+        var changeSetStatus = await GetChangeSetStatus(changeSetName);
+
+        return changeSetStatus != null;
+    }
+
     private async Task<bool> CreateStack(DeployOptions deployOptions)
     {
         var request = new CreateStackRequest
@@ -480,10 +487,18 @@ public class AwsCloudFormationService : ICloudProvisioningService
 
     private async Task<bool> CreateStackWithChangeSet(DeployOptions deployOptions)
     {
+        var changeSetName = GetChangeSetName(deployOptions);
+
+        if (await ChangeSetExists(changeSetName))
+        {
+            _console.Out.WriteLine("ChangeSet already exists.");
+            return false;
+        }
+        
         var request = new CreateChangeSetRequest
         {
             ChangeSetType = ChangeSetType.CREATE,
-            ChangeSetName = GetChangeSetName(deployOptions),
+            ChangeSetName = changeSetName,
             StackName = GetStackName(),
             Capabilities = GetCapabilities(),
             Tags = GetTags(),
@@ -501,10 +516,10 @@ public class AwsCloudFormationService : ICloudProvisioningService
             return false;
         }
 
-        return await WaitForChangeSetStatusChange(request.ChangeSetName, ChangeSetStatuses.SuccessfulCreate,
+        return await WaitForChangeSetStatusChange(changeSetName, ChangeSetStatuses.SuccessfulCreate,
             ChangeSetStatuses.WaitToEndCreate);
     }
-
+    
     private async Task<bool> UpdateStack(Stack stack, DeployOptions options)
     {
         try
@@ -545,10 +560,18 @@ public class AwsCloudFormationService : ICloudProvisioningService
 
     private async Task<bool> UpdateStackWithChangeSet(Stack stack, DeployOptions deployOptions)
     {
+        var changeSetName = GetChangeSetName(deployOptions);
+
+        if (await ChangeSetExists(changeSetName))
+        {
+            _console.Out.WriteLine("ChangeSet already exists.");
+            return false;
+        }
+
         var request = new CreateChangeSetRequest
         {
             ChangeSetType = ChangeSetType.UPDATE,
-            ChangeSetName = GetChangeSetName(deployOptions),
+            ChangeSetName = changeSetName,
             StackName = GetStackName(),
             Capabilities = GetCapabilities(),
             Tags = GetTags(),
@@ -568,7 +591,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
             return false;
         }
         
-        return await WaitForChangeSetStatusChange(request.ChangeSetName, ChangeSetStatuses.SuccessfulCreate,
+        return await WaitForChangeSetStatusChange(changeSetName, ChangeSetStatuses.SuccessfulCreate,
             ChangeSetStatuses.WaitToEndCreate);
     }
 
