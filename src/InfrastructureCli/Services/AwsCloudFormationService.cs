@@ -545,40 +545,31 @@ public class AwsCloudFormationService : ICloudProvisioningService
 
     private async Task<bool> UpdateStackWithChangeSet(Stack stack, DeployOptions deployOptions)
     {
-        try
+        var request = new CreateChangeSetRequest
         {
-            var request = new CreateChangeSetRequest
-            {
-                ChangeSetType = ChangeSetType.UPDATE,
-                ChangeSetName = GetChangeSetName(deployOptions),
-                StackName = GetStackName(),
-                Capabilities = GetCapabilities(),
-                Tags = GetTags(),
-                TemplateBody = GetTemplateBody(deployOptions.Template),
-                Parameters = await (deployOptions.UsePreviousParameters
-                    ? GetParameters(deployOptions.Parameters, stack)
-                    : GetParameters(deployOptions.Parameters))
-            };
-            
-            LogParameters(request.Parameters);
-            LogTemplateBody(request.TemplateBody);
+            ChangeSetType = ChangeSetType.UPDATE,
+            ChangeSetName = GetChangeSetName(deployOptions),
+            StackName = GetStackName(),
+            Capabilities = GetCapabilities(),
+            Tags = GetTags(),
+            TemplateBody = GetTemplateBody(deployOptions.Template),
+            Parameters = await (deployOptions.UsePreviousParameters
+                ? GetParameters(deployOptions.Parameters, stack)
+                : GetParameters(deployOptions.Parameters))
+        };
+        
+        LogParameters(request.Parameters);
+        LogTemplateBody(request.TemplateBody);
 
-            var response = await Client.CreateChangeSetAsync(request);
+        var response = await Client.CreateChangeSetAsync(request);
 
-            if (response.HttpStatusCode != HttpStatusCode.OK)
-            {
-                return false;
-            }
-            
-            return await WaitForChangeSetStatusChange(request.ChangeSetName, ChangeSetStatuses.SuccessfulCreate,
-                ChangeSetStatuses.WaitToEndCreate);
-        }
-        catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
+        if (response.HttpStatusCode != HttpStatusCode.OK)
         {
-            _console.Out.WriteLine("No updates are to be performed.");
-                
-            return true;
+            return false;
         }
+        
+        return await WaitForChangeSetStatusChange(request.ChangeSetName, ChangeSetStatuses.SuccessfulCreate,
+            ChangeSetStatuses.WaitToEndCreate);
     }
 
     async Task<string?> ICloudProvisioningService.GetProperty(GetOptions getOptions)
