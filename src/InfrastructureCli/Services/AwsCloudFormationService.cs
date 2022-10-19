@@ -521,7 +521,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
         }
     }
 
-    private async Task<bool> UpdateStackWithChangeSet(Stack stack, DeployOptions options)
+    private async Task<bool> UpdateStackWithChangeSet(Stack stack, DeployOptions deployOptions)
     {
         try
         {
@@ -532,10 +532,10 @@ public class AwsCloudFormationService : ICloudProvisioningService
                 StackName = GetStackName(),
                 Capabilities = GetCapabilities(),
                 Tags = GetTags(),
-                TemplateBody = GetTemplateBody(options.Template),
-                Parameters = await (options.UsePreviousParameters
-                    ? GetParameters(options.Parameters, stack)
-                    : GetParameters(options.Parameters))
+                TemplateBody = GetTemplateBody(deployOptions.Template),
+                Parameters = await (deployOptions.UsePreviousParameters
+                    ? GetParameters(deployOptions.Parameters, stack)
+                    : GetParameters(deployOptions.Parameters))
             };
             
             LogParameters(request.Parameters);
