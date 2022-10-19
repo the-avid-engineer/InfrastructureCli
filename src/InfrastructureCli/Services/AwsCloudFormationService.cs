@@ -85,31 +85,33 @@ public class AwsCloudFormationService : ICloudProvisioningService
         }
     }
 
-    private const string SuccessfulCreateStatus = "CREATE_COMPLETE";
-
-    private static readonly string[] WaitToEndCreateStatuses =
+    private static class StackStatuses
     {
-        "CREATE_IN_PROGRESS"
-    };
+        public static readonly StackStatus SuccessfulCreate = StackStatus.CREATE_COMPLETE;
 
-    private static readonly string[] WaitToBeginUpdateStatuses =
-    {
-        "CREATE_IN_PROGRESS",
-        "REVIEW_IN_PROGRESS",
-        "ROLLBACK_IN_PROGRESS",
-        "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
-        "UPDATE_IN_PROGRESS",
-        "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
-        "UPDATE_ROLLBACK_IN_PROGRESS"
-    };
+        public static readonly StackStatus[] WaitToEndCreate =
+        {
+            StackStatus.CREATE_IN_PROGRESS,
+        };
+        public static readonly StackStatus[] WaitToBeginUpdate =
+        {
+            StackStatus.CREATE_IN_PROGRESS,
+            StackStatus.REVIEW_IN_PROGRESS,
+            StackStatus.ROLLBACK_IN_PROGRESS,
+            StackStatus.UPDATE_COMPLETE_CLEANUP_IN_PROGRESS,
+            StackStatus.UPDATE_IN_PROGRESS,
+            StackStatus.UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS,
+            StackStatus.UPDATE_ROLLBACK_IN_PROGRESS,
+        };
 
-    private const string SuccessfulUpdateStatus = "UPDATE_COMPLETE";
+        public static readonly StackStatus SuccessfulUpdate = StackStatus.UPDATE_COMPLETE;
     
-    private static readonly string[] WaitToEndUpdateStatuses =
-    {
-        "UPDATE_IN_PROGRESS",
-        "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"
-    };    
+        public static readonly StackStatus[] WaitToEndUpdate =
+        {
+            StackStatus.UPDATE_IN_PROGRESS,
+            StackStatus.UPDATE_COMPLETE_CLEANUP_IN_PROGRESS,
+        };
+    }
     
     private static readonly IAmazonCloudFormation Client = new AmazonCloudFormationClient();
 
@@ -336,7 +338,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
         _console.Out.WriteLine();
     }
 
-    private async Task<bool> WaitForStatusChange(bool waitNext, string? successStatus, params string[] loopStatuses)
+    private async Task<bool> WaitForStackStatusChange(bool waitNext, StackStatus? successStatus, params StackStatus[] loopStatuses)
     {
         var currentStatus = loopStatuses[0];
             
@@ -362,7 +364,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
 
             currentStatus = stack.StackStatus;
                 
-            _console.WriteLine($"Status is {currentStatus}");
+            _console.WriteLine($"Stack status is {currentStatus}");
         }
 
         return successStatus == currentStatus;
@@ -399,7 +401,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
             return false;
         }
             
-        return await WaitForStatusChange(true, SuccessfulCreateStatus, WaitToEndCreateStatuses);
+        return await WaitForStackStatusChange(true, StackStatuses.SuccessfulCreate, StackStatuses.WaitToEndCreate);
     }
 
     private async Task<bool> CreateStackWithChangeSet(DeployOptions deployOptions)
@@ -427,7 +429,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
     {
         try
         {
-            await WaitForStatusChange(false,null, WaitToBeginUpdateStatuses);
+            await WaitForStackStatusChange(false,null, StackStatuses.WaitToBeginUpdate);
             
             var request = new UpdateStackRequest
             {
@@ -451,7 +453,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
                 return false;
             }
 
-            return await WaitForStatusChange(true, SuccessfulUpdateStatus, WaitToEndUpdateStatuses);
+            return await WaitForStackStatusChange(true, StackStatuses.SuccessfulUpdate, StackStatuses.WaitToEndUpdate);
         }
         catch (AmazonCloudFormationException exception) when (exception.Message == "No updates are to be performed.")
         {
