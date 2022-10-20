@@ -19,7 +19,8 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
         bool UsePreviousParameters,
         Dictionary<string, string> Parameters,
         Dictionary<string, string> Options,
-        FileInfo? FinalTemplateFileName
+        FileInfo? FinalTemplateFileName,
+        int FailedExitCode
     );
         
     private async Task<int> Execute(Arguments arguments)
@@ -76,7 +77,7 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
 
         var success = await cloudProvisioningService.Deploy(deployOptions);
 
-        return success ? 0 : 2;
+        return success ? 0 : arguments.FailedExitCode;
     }
 
     private static void AttachOptionsOption(Command parentCommand)
@@ -125,6 +126,18 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
         parentCommand.AddOption(finalTemplateFileName);
     }
 
+    private static void AttachFailedExitCodeOption(Command parentCommand)
+    {
+        var failedExitCode = new Option<int>("--failed-exit-code")
+        {
+            Description = "This exit code is returned if the deployment failed."
+        };
+        
+        failedExitCode.SetDefaultValue(2);
+        
+        parentCommand.AddOption(failedExitCode);
+    }
+
     public static void Attach(RootCommand rootCommand, IValidateConfigurationsFile? validateConfigurationsFile)
     {
         var deployCommand = new Command("deploy")
@@ -140,6 +153,7 @@ internal record DeployCommand(IValidateConfigurationsFile? ValidateConfiguration
 
         AttachConfigurationsFileNameOption(deployCommand);
         AttachFinalTemplateFileNameOption(deployCommand);
+        AttachFailedExitCodeOption(deployCommand);
 
         rootCommand.AddCommand(deployCommand);
     }
