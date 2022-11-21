@@ -14,9 +14,14 @@ public class AwsService : ICloudProviderService
         _console = console;
     }
     
-    public string GetRegionName()
+    public static string GetRegionName()
     {
         return FallbackRegionFactory.GetRegionEndpoint().SystemName;
+    }
+
+    string ICloudProviderService.GetRegionName()
+    {
+        return GetRegionName();
     }
 
     ICloudProvisioningService ICloudProviderService.GetProvisioningService(
