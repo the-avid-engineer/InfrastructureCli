@@ -62,18 +62,3 @@ jobs:
           path: |
             ./**/*.nupkg
             ./**/*.snupkg
-    env:
-      NOTES: ${{ needs.extract.outputs.notes }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v1
-      - name: Restore Dependencies
-        run: dotnet restore InfrastructureCli.sln --locked-mode
-      - name: Run Project Tests
-        run: dotnet test InfrastructureCli.sln -f net6.0 --no-restore -c Debug
-      - name: Pack Projects into Nuget Packages
-        run: dotnet pack InfrastructureCli.sln --no-restore -c Release /p:Version=${{ needs.extract.outputs.version }} /p:PackageReleaseNotes=${Env:NOTES}
-      - name: Publish to Nuget.org
-        run: dotnet nuget push */**.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
