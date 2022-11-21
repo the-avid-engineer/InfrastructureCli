@@ -1,40 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <!--Application-->
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net6.0</TargetFrameworks>
-    <LangVersion>10.0</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <!--Build-->
-  <PropertyGroup>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-  </PropertyGroup>
-
-  <!--Package-->
-  <PropertyGroup>
-    <IsPackable>true</IsPackable>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Authors>Chris Philips</Authors>
-    <Copyright>2021 © Chris Philips</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/the-avid-engineer/InfrastructureCli</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <NeutralLanguage>en</NeutralLanguage>
-    <PackageTags>Infrastructure CLI Helper</PackageTags>
-    <Description>Provides a base CLI that can be extended.</Description>
-    <PackageIconUrl />
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="AWSSDK.CloudFormation" Version="3.7.9.14" />
+    <PackageReference Include="AWSSDK.CloudFormation" Version="3.7.102.2" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
     <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta3.22114.1" />
-    <PackageReference Include="System.Text.Json" Version="6.0.3" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
   </ItemGroup>
 
 </Project>

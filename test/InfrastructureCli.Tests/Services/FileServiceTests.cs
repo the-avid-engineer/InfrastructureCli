@@ -33,6 +33,6 @@ public class FileServiceTests
         return (Task)GetType()
             .GetMethod(nameof(Generic_GivenFixtureAndType_ThenCanDeserializeFromFile), ~BindingFlags.Public)!
             .MakeGenericMethod(deserializedType)
-            .Invoke(null, new object[] { fixtureName });
+            .Invoke(null, new object[] { fixtureName })!;
     }
 }

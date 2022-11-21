@@ -1,0 +1,25 @@
+<Project>
+	
+	<Import Project="../Directory.Build.props"/>
+
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<IsPackable>true</IsPackable>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<Authors>Chris Philips</Authors>
+		<Copyright>2021 - 2022 © Chris Philips</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/the-avid-engineer/InfrastructureCli</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<NeutralLanguage>en</NeutralLanguage>
+		<PackageTags>Infrastructure CLI Helper</PackageTags>
+		<Description>Provides a base CLI that can be extended.</Description>
+	</PropertyGroup>
+
+</Project>
