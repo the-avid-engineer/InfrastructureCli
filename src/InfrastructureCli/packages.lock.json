@@ -4,11 +4,11 @@
     "net6.0": {
       "AWSSDK.CloudFormation": {
         "type": "Direct",
-        "requested": "[3.7.102.2, )",
-        "resolved": "3.7.102.2",
-        "contentHash": "gnuK1NIyZYV07sn0UmoZZWR+sDwOpYpuKImqdzD5yvTPRtIkA3j2Y2bxbjRRHYT28BysNuU5JFOsbhsfJxTCGQ==",
+        "requested": "[3.7.204.8, )",
+        "resolved": "3.7.204.8",
+        "contentHash": "hM65+QNxU1E75azp/puoqrx3eRQxDMzCuakbmPb9LUiAP2qrcoBAZXTazOenqtRkGu9abcc6OTs9IzU2gF76tg==",
         "dependencies": {
-          "AWSSDK.Core": "[3.7.100.21, 4.0.0)"
+          "AWSSDK.Core": "[3.7.204.10, 4.0.0)"
         }
       },
       "System.CommandLine": {
@@ -28,18 +28,18 @@
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "3.7.100.21",
-        "contentHash": "yU8kCoEHA39yqFrxqlkEKANHW5Bp3n4CaAwVmZNcq+pyl9o2lK33s3N+7gpns+jvn7BRF6C8EJ4c6sqlGg9h7Q=="
+        "resolved": "3.7.204.10",
+        "contentHash": "wYTTmT2C8aik3AxQlOVTH2JpsEnprUCbmeImj04nv1bmfw/vhfh1egXX9/F4ptQF8RReMS4tWIS07csfFRG+Kg=="
       }
     },
     "net7.0": {
       "AWSSDK.CloudFormation": {
         "type": "Direct",
-        "requested": "[3.7.102.2, )",
-        "resolved": "3.7.102.2",
-        "contentHash": "gnuK1NIyZYV07sn0UmoZZWR+sDwOpYpuKImqdzD5yvTPRtIkA3j2Y2bxbjRRHYT28BysNuU5JFOsbhsfJxTCGQ==",
+        "requested": "[3.7.204.8, )",
+        "resolved": "3.7.204.8",
+        "contentHash": "hM65+QNxU1E75azp/puoqrx3eRQxDMzCuakbmPb9LUiAP2qrcoBAZXTazOenqtRkGu9abcc6OTs9IzU2gF76tg==",
         "dependencies": {
-          "AWSSDK.Core": "[3.7.100.21, 4.0.0)"
+          "AWSSDK.Core": "[3.7.204.10, 4.0.0)"
         }
       },
       "System.CommandLine": {
@@ -59,8 +59,8 @@
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "3.7.100.21",
-        "contentHash": "yU8kCoEHA39yqFrxqlkEKANHW5Bp3n4CaAwVmZNcq+pyl9o2lK33s3N+7gpns+jvn7BRF6C8EJ4c6sqlGg9h7Q=="
+        "resolved": "3.7.204.10",
+        "contentHash": "wYTTmT2C8aik3AxQlOVTH2JpsEnprUCbmeImj04nv1bmfw/vhfh1egXX9/F4ptQF8RReMS4tWIS07csfFRG+Kg=="
       }
     }
   }

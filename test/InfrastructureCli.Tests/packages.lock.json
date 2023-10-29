@@ -57,16 +57,16 @@
       },
       "AWSSDK.CloudFormation": {
         "type": "Transitive",
-        "resolved": "3.7.102.2",
-        "contentHash": "gnuK1NIyZYV07sn0UmoZZWR+sDwOpYpuKImqdzD5yvTPRtIkA3j2Y2bxbjRRHYT28BysNuU5JFOsbhsfJxTCGQ==",
+        "resolved": "3.7.204.8",
+        "contentHash": "hM65+QNxU1E75azp/puoqrx3eRQxDMzCuakbmPb9LUiAP2qrcoBAZXTazOenqtRkGu9abcc6OTs9IzU2gF76tg==",
         "dependencies": {
-          "AWSSDK.Core": "[3.7.100.21, 4.0.0)"
+          "AWSSDK.Core": "[3.7.204.10, 4.0.0)"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "3.7.100.21",
-        "contentHash": "yU8kCoEHA39yqFrxqlkEKANHW5Bp3n4CaAwVmZNcq+pyl9o2lK33s3N+7gpns+jvn7BRF6C8EJ4c6sqlGg9h7Q=="
+        "resolved": "3.7.204.10",
+        "contentHash": "wYTTmT2C8aik3AxQlOVTH2JpsEnprUCbmeImj04nv1bmfw/vhfh1egXX9/F4ptQF8RReMS4tWIS07csfFRG+Kg=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -1135,7 +1135,7 @@
       "infrastructurecli": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.CloudFormation": "[3.7.102.2, )",
+          "AWSSDK.CloudFormation": "[3.7.204.8, )",
           "System.CommandLine": "[2.0.0-beta4.22272.1, )",
           "System.CommandLine.NamingConventionBinder": "[2.0.0-beta4.22272.1, )"
         }
@@ -1197,16 +1197,16 @@
       },
       "AWSSDK.CloudFormation": {
         "type": "Transitive",
-        "resolved": "3.7.102.2",
-        "contentHash": "gnuK1NIyZYV07sn0UmoZZWR+sDwOpYpuKImqdzD5yvTPRtIkA3j2Y2bxbjRRHYT28BysNuU5JFOsbhsfJxTCGQ==",
+        "resolved": "3.7.204.8",
+        "contentHash": "hM65+QNxU1E75azp/puoqrx3eRQxDMzCuakbmPb9LUiAP2qrcoBAZXTazOenqtRkGu9abcc6OTs9IzU2gF76tg==",
         "dependencies": {
-          "AWSSDK.Core": "[3.7.100.21, 4.0.0)"
+          "AWSSDK.Core": "[3.7.204.10, 4.0.0)"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "3.7.100.21",
-        "contentHash": "yU8kCoEHA39yqFrxqlkEKANHW5Bp3n4CaAwVmZNcq+pyl9o2lK33s3N+7gpns+jvn7BRF6C8EJ4c6sqlGg9h7Q=="
+        "resolved": "3.7.204.10",
+        "contentHash": "wYTTmT2C8aik3AxQlOVTH2JpsEnprUCbmeImj04nv1bmfw/vhfh1egXX9/F4ptQF8RReMS4tWIS07csfFRG+Kg=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -2275,7 +2275,7 @@
       "infrastructurecli": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.CloudFormation": "[3.7.102.2, )",
+          "AWSSDK.CloudFormation": "[3.7.204.8, )",
           "System.CommandLine": "[2.0.0-beta4.22272.1, )",
           "System.CommandLine.NamingConventionBinder": "[2.0.0-beta4.22272.1, )"
         }
