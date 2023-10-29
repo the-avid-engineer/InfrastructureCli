@@ -34,6 +34,19 @@ public abstract record CommandBase
         parentCommand.AddGlobalOption(configurationsFileName);
     }
 
+    protected static ICloudProviderService GetCloudProviderService
+    (
+        Configuration configuration,
+        IConsole console
+    )
+    {
+        return configuration.TemplateType switch
+        {
+            TemplateType.AwsCloudFormation => new AwsService(console),
+            _ => throw new NotSupportedException()
+        };
+    }
+
     protected static async Task<(IRootRewriter, ICloudProvisioningService)> GetProvisioningTools
     (
         ConfigurationsFile configurationsFile,
@@ -42,11 +55,7 @@ public abstract record CommandBase
         string currentPath
     )
     {
-        ICloudProviderService cloudProviderService = configuration.TemplateType switch
-        {
-            TemplateType.AwsCloudFormation => new AwsService(console),
-            _ => throw new NotSupportedException()
-        };
+        var cloudProviderService = GetCloudProviderService(configuration, console);
 
         var region = cloudProviderService.GetRegionName();
 
