@@ -4,16 +4,16 @@
     "net6.0": {
       "AWSSDK.CloudFormation": {
         "type": "Transitive",
-        "resolved": "3.7.204.8",
-        "contentHash": "hM65+QNxU1E75azp/puoqrx3eRQxDMzCuakbmPb9LUiAP2qrcoBAZXTazOenqtRkGu9abcc6OTs9IzU2gF76tg==",
+        "resolved": "3.7.300.3",
+        "contentHash": "2yoCBTR8+r8OCxOkMsb3sVSgsuCs7Hrvk6vwUcE73dFnC48IVPYlaCdUJWb8sJ2uolvH/s5skfhOD5N4c+h00Q==",
         "dependencies": {
-          "AWSSDK.Core": "[3.7.204.10, 4.0.0)"
+          "AWSSDK.Core": "[3.7.300.3, 4.0.0)"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "3.7.204.10",
-        "contentHash": "wYTTmT2C8aik3AxQlOVTH2JpsEnprUCbmeImj04nv1bmfw/vhfh1egXX9/F4ptQF8RReMS4tWIS07csfFRG+Kg=="
+        "resolved": "3.7.300.3",
+        "contentHash": "Ffqx+2+VXUxan1R/sHryxz6cDyJWScftN4hmpBOuKLOkNK+jcP2E0ODmPEzwGKeB1XnRRkjyfaRO0r1JD5FIQw=="
       },
       "System.CommandLine": {
         "type": "Transitive",
@@ -31,7 +31,7 @@
       "infrastructurecli": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.CloudFormation": "[3.7.204.8, )",
+          "AWSSDK.CloudFormation": "[3.7.300.3, )",
           "System.CommandLine": "[2.0.0-beta4.22272.1, )",
           "System.CommandLine.NamingConventionBinder": "[2.0.0-beta4.22272.1, )"
         }
@@ -40,16 +40,16 @@
     "net7.0": {
       "AWSSDK.CloudFormation": {
         "type": "Transitive",
-        "resolved": "3.7.204.8",
-        "contentHash": "hM65+QNxU1E75azp/puoqrx3eRQxDMzCuakbmPb9LUiAP2qrcoBAZXTazOenqtRkGu9abcc6OTs9IzU2gF76tg==",
+        "resolved": "3.7.300.3",
+        "contentHash": "2yoCBTR8+r8OCxOkMsb3sVSgsuCs7Hrvk6vwUcE73dFnC48IVPYlaCdUJWb8sJ2uolvH/s5skfhOD5N4c+h00Q==",
         "dependencies": {
-          "AWSSDK.Core": "[3.7.204.10, 4.0.0)"
+          "AWSSDK.Core": "[3.7.300.3, 4.0.0)"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "3.7.204.10",
-        "contentHash": "wYTTmT2C8aik3AxQlOVTH2JpsEnprUCbmeImj04nv1bmfw/vhfh1egXX9/F4ptQF8RReMS4tWIS07csfFRG+Kg=="
+        "resolved": "3.7.300.3",
+        "contentHash": "Ffqx+2+VXUxan1R/sHryxz6cDyJWScftN4hmpBOuKLOkNK+jcP2E0ODmPEzwGKeB1XnRRkjyfaRO0r1JD5FIQw=="
       },
       "System.CommandLine": {
         "type": "Transitive",
@@ -67,7 +67,43 @@
       "infrastructurecli": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.CloudFormation": "[3.7.204.8, )",
+          "AWSSDK.CloudFormation": "[3.7.300.3, )",
+          "System.CommandLine": "[2.0.0-beta4.22272.1, )",
+          "System.CommandLine.NamingConventionBinder": "[2.0.0-beta4.22272.1, )"
+        }
+      }
+    },
+    "net8.0": {
+      "AWSSDK.CloudFormation": {
+        "type": "Transitive",
+        "resolved": "3.7.300.3",
+        "contentHash": "2yoCBTR8+r8OCxOkMsb3sVSgsuCs7Hrvk6vwUcE73dFnC48IVPYlaCdUJWb8sJ2uolvH/s5skfhOD5N4c+h00Q==",
+        "dependencies": {
+          "AWSSDK.Core": "[3.7.300.3, 4.0.0)"
+        }
+      },
+      "AWSSDK.Core": {
+        "type": "Transitive",
+        "resolved": "3.7.300.3",
+        "contentHash": "Ffqx+2+VXUxan1R/sHryxz6cDyJWScftN4hmpBOuKLOkNK+jcP2E0ODmPEzwGKeB1XnRRkjyfaRO0r1JD5FIQw=="
+      },
+      "System.CommandLine": {
+        "type": "Transitive",
+        "resolved": "2.0.0-beta4.22272.1",
+        "contentHash": "1uqED/q2H0kKoLJ4+hI2iPSBSEdTuhfCYADeJrAqERmiGQ2NNacYKRNEQ+gFbU4glgVyK8rxI+ZOe1onEtr/Pg=="
+      },
+      "System.CommandLine.NamingConventionBinder": {
+        "type": "Transitive",
+        "resolved": "2.0.0-beta4.22272.1",
+        "contentHash": "ux2eUA/syF+JtlpMDc/Lsd6PBIBuwjH3AvHnestoh5uD0WKT5b+wkQxDWVCqp9qgVjMBTLNhX19ZYFtenunt9A==",
+        "dependencies": {
+          "System.CommandLine": "2.0.0-beta4.22272.1"
+        }
+      },
+      "infrastructurecli": {
+        "type": "Project",
+        "dependencies": {
+          "AWSSDK.CloudFormation": "[3.7.300.3, )",
           "System.CommandLine": "[2.0.0-beta4.22272.1, )",
           "System.CommandLine.NamingConventionBinder": "[2.0.0-beta4.22272.1, )"
         }
