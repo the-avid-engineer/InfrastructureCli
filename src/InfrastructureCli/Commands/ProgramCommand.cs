@@ -24,6 +24,7 @@ public class ProgramCommand
         CanDeployCommand.Attach(rootCommand);
         DeployCommand.Attach(rootCommand, options.ValidateConfigurationsFile);
         GetCommand.Attach(rootCommand);
+        GetAttributeCommand.Attach(rootCommand);
 
         _rootCommand = rootCommand;
     }
