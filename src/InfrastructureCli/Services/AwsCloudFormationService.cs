@@ -494,10 +494,25 @@ public class AwsCloudFormationService : ICloudProvisioningService
             _console.Out.WriteLine("ChangeSet already exists.");
             return false;
         }
+
+        ChangeSetType changeSetType;
+        List<ResourceToImport>? resourcesToImport;
+        
+        if (deployOptions.Options.TryGetValue("ResourcesToImport", out var resourcesToImportJson))
+        {
+            changeSetType = ChangeSetType.IMPORT;
+            resourcesToImport = JsonSerializer.Deserialize<List<ResourceToImport>>(resourcesToImportJson);
+        }
+        else
+        {
+            changeSetType = ChangeSetType.CREATE;
+            resourcesToImport = null;
+        }
         
         var request = new CreateChangeSetRequest
         {
-            ChangeSetType = ChangeSetType.CREATE,
+            ChangeSetType = changeSetType,
+            ResourcesToImport = resourcesToImport,
             ChangeSetName = changeSetName,
             StackName = GetStackName(),
             Capabilities = GetCapabilities(),
