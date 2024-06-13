@@ -497,16 +497,19 @@ public class AwsCloudFormationService : ICloudProvisioningService
 
         ChangeSetType changeSetType;
         List<ResourceToImport>? resourcesToImport;
+        List<Tag>? tags;
         
         if (deployOptions.Options.TryGetValue("ResourcesToImport", out var resourcesToImportJson))
         {
             changeSetType = ChangeSetType.IMPORT;
             resourcesToImport = JsonSerializer.Deserialize<List<ResourceToImport>>(resourcesToImportJson);
+            tags = null;
         }
         else
         {
             changeSetType = ChangeSetType.CREATE;
             resourcesToImport = null;
+            tags = GetTags();
         }
         
         var request = new CreateChangeSetRequest
@@ -516,7 +519,7 @@ public class AwsCloudFormationService : ICloudProvisioningService
             ChangeSetName = changeSetName,
             StackName = GetStackName(),
             Capabilities = GetCapabilities(),
-            Tags = GetTags(),
+            Tags = tags,
             TemplateBody = GetTemplateBody(deployOptions.Template),
             Parameters = await GetParameters(deployOptions.Parameters)
         };
