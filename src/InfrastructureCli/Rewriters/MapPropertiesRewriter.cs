@@ -31,6 +31,7 @@ internal sealed class MapPropertiesRewriter : RewriterBase, IRewriter
 
                 rootRewriter
                     .PrependToBottomUp(new GetAttributeValueRewriter<dynamic>(attributes))
+                    .PrependToBottomUp(new AttributeValueDefinedRewriter(attributes.Keys))
                     .Rewrite(templateJsonElement)
                     .WriteTo(jsonWriter);
             }

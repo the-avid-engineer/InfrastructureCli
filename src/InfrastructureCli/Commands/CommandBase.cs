@@ -69,12 +69,15 @@ public abstract record CommandBase
 
         var deployed = await cloudProvisioningService.IsDeployed();
 
+        var attributes = new Dictionary<string, object>
+        {
+            ["::DeployType"] = deployed ? "::Update" : "::Create"
+        };
+        
         rootRewriter = rootRewriter
             .PrependToBottomUp(new GetResourceDeployTypeRewriter(cloudProvisioningService))
-            .PrependToBottomUp(new GetAttributeValueRewriter<object>(new Dictionary<string, object>
-            {
-                ["::DeployType"] = deployed ? "::Update" : "::Create"
-            }));
+            .PrependToBottomUp(new GetAttributeValueRewriter<object>(attributes))
+            .PrependToBottomUp(new AttributeValueDefinedRewriter(attributes.Keys));
         
         return (rootRewriter, cloudProvisioningService);
     }
