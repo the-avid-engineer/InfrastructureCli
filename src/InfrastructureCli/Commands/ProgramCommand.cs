@@ -24,6 +24,11 @@ public class ProgramCommand
             NewCommand.Attach(rootCommand, options.GenerateCommands);
         }
         
+        if (options.CustomCommands is { Length: > 0 })
+        {
+            CustomCommand.Attach(rootCommand, options.CustomCommands);
+        }
+
         _rootCommand = rootCommand;
     }
 
