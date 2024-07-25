@@ -15,11 +15,15 @@ public class ProgramCommand
         var rootCommand = new RootCommand();
 
         InteractiveCommand.Attach(rootCommand);
-        NewCommand.Attach(rootCommand, options.GenerateCommands);
         CanDeployCommand.Attach(rootCommand);
         DeployCommand.Attach(rootCommand, options.ValidateConfigurationsFile);
         GetCommand.Attach(rootCommand);
 
+        if (options.GenerateCommands is { Length: > 0 })
+        {
+            NewCommand.Attach(rootCommand, options.GenerateCommands);
+        }
+        
         _rootCommand = rootCommand;
     }
 
