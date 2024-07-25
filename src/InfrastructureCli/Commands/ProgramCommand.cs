@@ -9,11 +9,6 @@ namespace InfrastructureCli.Commands;
 public class ProgramCommand
 {
     private readonly RootCommand _rootCommand;
-
-    [Obsolete("This constructor will be removed in the future. Pass in a ProgramCommandOptions object instead.")]
-    public ProgramCommand(IEnumerable<IGenerateCommand> generateCommands) : this(new ProgramCommandOptions(generateCommands.ToArray()))
-    {
-    }
     
     public ProgramCommand(ProgramCommandOptions options)
     {
