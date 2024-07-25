@@ -5,7 +5,7 @@ namespace InfrastructureCli.Commands;
 
 internal record NewCommand : CommandBase
 {
-    public static void Attach(RootCommand rootCommand, IEnumerable<IGenerateCommand> generateCommands)
+    public static void Attach(RootCommand rootCommand, IEnumerable<IChildCommand> generateCommands)
     {
         var newCommand = new Command("new")
         {
