@@ -1,7 +1,7 @@
 namespace InfrastructureCli.Commands;
 
 public record ProgramCommandOptions
-(
-    IGenerateCommand[] GenerateCommands,
-    IValidateConfigurationsFile? ValidateConfigurationsFile = null
-);
+{
+    public IChildCommand[] GenerateCommands { get; init; } = Array.Empty<IChildCommand>();
+    public IValidateConfigurationsFile? ValidateConfigurationsFile { get; init; }
+}
