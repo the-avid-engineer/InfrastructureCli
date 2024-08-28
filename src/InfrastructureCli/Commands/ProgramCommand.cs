@@ -18,6 +18,7 @@ public class ProgramCommand
         CanDeployCommand.Attach(rootCommand);
         DeployCommand.Attach(rootCommand, options.ValidateConfigurationsFile);
         GetCommand.Attach(rootCommand);
+        GetAttributeCommand.Attach(rootCommand);
 
         if (options.GenerateCommands is { Length: > 0 })
         {
