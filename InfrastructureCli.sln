@@ -1,13 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31004.235
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfrastructureCli", "src\InfrastructureCli\InfrastructureCli.csproj", "{3688BD32-74B7-4314-B189-1B8B3306E142}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfrastructureCli.Tests", "test\InfrastructureCli.Tests\InfrastructureCli.Tests.csproj", "{31FCCEB7-C59B-44C5-892B-C2FC7F59D31A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfrastructureCli.Interactive", "src\InfrastructureCli.Interactive\InfrastructureCli.Interactive.csproj", "{06DA32A6-6FA8-451F-BE6F-5A0E12D4F0D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfrastructureCli.Interactive", "src\InfrastructureCli.Interactive\InfrastructureCli.Interactive.csproj", "{06DA32A6-6FA8-451F-BE6F-5A0E12D4F0D5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{80A66DD4-EA44-4056-B3A6-F939A567A912}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B2EFE59F-CC18-4CD0-8BD1-CBF33FF2622A}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AD1E6308-B45F-4A53-9CBE-8FE1E23AF870}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		global.json = global.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +60,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3688BD32-74B7-4314-B189-1B8B3306E142} = {80A66DD4-EA44-4056-B3A6-F939A567A912}
+		{31FCCEB7-C59B-44C5-892B-C2FC7F59D31A} = {B2EFE59F-CC18-4CD0-8BD1-CBF33FF2622A}
+		{06DA32A6-6FA8-451F-BE6F-5A0E12D4F0D5} = {80A66DD4-EA44-4056-B3A6-F939A567A912}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C919EC34-7DB7-4A4B-852F-130578831D10}

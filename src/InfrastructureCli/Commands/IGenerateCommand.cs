@@ -1,8 +1,6 @@
-﻿using System.CommandLine;
+﻿namespace InfrastructureCli.Commands;
 
-namespace InfrastructureCli.Commands;
-
-public interface IGenerateCommand
+[Obsolete("Please use IChildCommand instead.", true)]
+public interface IGenerateCommand : IChildCommand
 {
-    void Attach(Command parentCommand);
 }

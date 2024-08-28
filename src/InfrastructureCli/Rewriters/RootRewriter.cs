@@ -123,19 +123,23 @@ internal sealed class RootRewriter : RewriterBase, IRootRewriter
         if (allRegionAttributes.TryGetValue(region, out var regionAttributes))
         {
             bottomUpRewriters.Add(new GetAttributeValueRewriter<JsonElement>(regionAttributes));
+            bottomUpRewriters.Add(new AttributeValueDefinedRewriter(regionAttributes.Keys));
         }
         
         // Non-Global, Non-Region
         bottomUpRewriters.Add(new GetAttributeValueRewriter<JsonElement>(attributes));
+        bottomUpRewriters.Add(new AttributeValueDefinedRewriter(attributes.Keys));
         
         // Global, Region
         if (allGlobalRegionAttributes.TryGetValue(region, out var globalRegionAttributes))
         {
             bottomUpRewriters.Add(new GetAttributeValueRewriter<JsonElement>(globalRegionAttributes));
+            bottomUpRewriters.Add(new AttributeValueDefinedRewriter(globalRegionAttributes.Keys));
         }
         
         // Global, Non-Region
         bottomUpRewriters.Add(new GetAttributeValueRewriter<JsonElement>(globalAttributes));
+        bottomUpRewriters.Add(new AttributeValueDefinedRewriter(globalAttributes.Keys));
         
         bottomUpRewriters.AddRange
         (

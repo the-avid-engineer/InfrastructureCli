@@ -9,7 +9,7 @@ using InfrastructureCli.Services;
 
 namespace InfrastructureCli.Commands;
 
-public abstract record GenerateConfigurationCommandBase<TArguments> : CommandBase, IGenerateCommand
+public abstract record GenerateConfigurationCommandBase<TArguments> : CommandBase, IChildCommand
     where TArguments : IGenerateConfigurationCommandArguments
 {
     protected virtual async Task Execute(TArguments arguments)

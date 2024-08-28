@@ -22,6 +22,7 @@ internal class UsingAttributesRewriter : RewriterBase, IRewriter
 
         return rootRewriter
             .PrependToBottomUp(new GetAttributeValueRewriter<JsonElement>(attributes))
+            .PrependToBottomUp(new AttributeValueDefinedRewriter(attributes.Keys))
             .Rewrite(templateJsonElement);
     }
 }
